@@ -207,7 +207,7 @@ FIXME:
 void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 {
     bool doloop; /* LOGICAL16 */
-    int _do0, i, ii, j;
+    int i, ii, j;
 
     qDebug() << "In bagrov()...";
 
@@ -242,9 +242,9 @@ L_21:
         sg = sg + su;
         su = 0.0F;
 
-        for (ii = 1, _do0 = j; ii <= _do0; ii += 2) {
-            su = su + 1.0F / (1.0F - (float) exp(*bagf * log(u)));
-            u = u + du;
+        for (ii = 1; ii <= j; ii += 2) {
+            su += 1.0F / (1.0F - (float) exp(*bagf * log(u)));
+            u += du;
         }
 
         si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
