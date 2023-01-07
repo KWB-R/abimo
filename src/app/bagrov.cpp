@@ -236,10 +236,11 @@ L_21:
 
     do {
         s = si;
-        j = j * 2;
-        du = du / 2.0F;
+        j *= 2;
+        du /= 2.0F;
         u = du / 2.0F;
-        sg = sg + su;
+        sg += su;
+
         su = 0.0F;
 
         for (ii = 1; ii <= j; ii += 2) {
