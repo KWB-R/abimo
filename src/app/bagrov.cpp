@@ -216,13 +216,13 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 
     float	delta, du, h, s, s1, sg, si, su, u, x;
 
-    if (*x0 == 0.0) goto L_10;
+    if (*x0 == 0.0) {
+        *y0 = 0.0F;
+        return;
+    }
+
     *y0 = 0.99F;
-    goto L_20;
-L_10:
-    *y0 = 0.0F;
-    return;
-L_20:
+
     doloop = false;
 
     /* NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG */
