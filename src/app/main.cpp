@@ -128,7 +128,7 @@ int main_batch(int argc, char *argv[])
     QString logFileName = Helpers::defaultLogFileName(outputFileName);
     bool debug = parser.isSet("debug");
 
-    // Handle --write_bagrov-table
+    // Handle --write-bagrov-table
     if (parser.isSet("write-bagrov-table")) {
         writeBagrovTable();
         return 0;
