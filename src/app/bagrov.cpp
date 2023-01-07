@@ -233,6 +233,7 @@ L_21:
     si = h * du / 4.0F;
     sg = 0.0F;
     su = 0.0F;
+
 L_1:
     s = si;
     j = j * 2;
@@ -249,49 +250,79 @@ L_1:
 
     si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
     s1 = 0.001F * s;
-    if (fabs(s - si) > s1) goto L_1;
+
+    if (fabs(s - si) > s1) {
+        goto L_1;
+    }
+
     x = si;
 
     /* ENDE DER NUMERISCHEN INTEGRATION */
-    if (doloop) goto L_42;
-    if (*x0 > x) goto L_30;
+    if (doloop) {
+        goto L_42;
+    }
+
+    if (*x0 > x) {
+        goto L_30;
+    }
+
     *y0 = 0.5F;
+
     goto L_40;
+
 L_30:
     *y0 = 1.0F;
     return;
+
 L_40:
     i = 1;
 
     /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
+
 L_41:
     doloop = true;
     goto L_21;
+
 L_42:
     delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
     *y0 = *y0 + delta;
-    if (*y0 >= 1.0) goto L_50;
-    if (*y0 <= 0.0) goto L_60;
+
+    if (*y0 >= 1.0) {
+        goto L_50;
+    }
+
+    if (*y0 <= 0.0) {
+        goto L_60;
+    }
+
     goto L_70;
+
 L_50:
     *y0 = 0.99F;
     goto L_90;
+
 L_60:
     *y0 = 0.01F;
     goto L_90;
+
 L_70:
-    if (fabs(delta) < 0.01F) goto L_80;
+    if (fabs(delta) < 0.01F) {
+        goto L_80;
+    }
+
     goto L_90;
+
 L_80:
-    ;
     return;
+
 L_90:
     if (i < 10) goto L_91;
     goto L_92;
+
 L_91:
     i = i + 1;
     goto L_41;
+
 L_92:
-    ;
     return;
 }	/* end of function */
