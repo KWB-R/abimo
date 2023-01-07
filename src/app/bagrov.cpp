@@ -263,18 +263,12 @@ L_1:
     }
 
     if (*x0 > x) {
-        goto L_30;
+        *y0 = 1.0F;
+        return;
     }
 
     *y0 = 0.5F;
 
-    goto L_40;
-
-L_30:
-    *y0 = 1.0F;
-    return;
-
-L_40:
     i = 1;
 
     /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
