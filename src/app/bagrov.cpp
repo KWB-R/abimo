@@ -226,6 +226,7 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
     doloop = false;
 
     /* NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG */
+
 L_21:
     j = 1;
     du = 2.0F **y0;
@@ -260,25 +261,19 @@ L_21:
         delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
         *y0 = *y0 + delta;
 
+        bool skip = false;
+
         if (*y0 >= 1.0) {
             *y0 = 0.99F;
-            if (i < 10) {
-                i = i + 1;
-                doloop = true;
-                goto L_21;
-            }
+            skip = true;
         }
 
-        if (*y0 <= 0.0) {
+        if (!skip && *y0 <= 0.0) {
             *y0 = 0.01F;
-            if (i < 10) {
-                i = i + 1;
-                doloop = true;
-                goto L_21;
-            }
+            skip = true;
         }
 
-        if (fabs(delta) < 0.01F) {
+        if (!skip && fabs(delta) < 0.01F) {
             return;
         }
 
@@ -302,6 +297,7 @@ L_21:
     /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
 
     doloop = true;
+
     goto L_21;
 
 }	/* end of function */
