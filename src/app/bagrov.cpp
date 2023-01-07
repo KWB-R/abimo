@@ -262,19 +262,24 @@ L_21:
 
         if (*y0 >= 1.0) {
             *y0 = 0.99F;
-            goto L_90;
+            if (i < 10) {
+                i = i + 1;
+                goto L_41;
+            }
         }
 
         if (*y0 <= 0.0) {
             *y0 = 0.01F;
-            goto L_90;
+            if (i < 10) {
+                i = i + 1;
+                goto L_41;
+            }
         }
 
         if (fabs(delta) < 0.01F) {
             return;
         }
 
-L_90:
         if (i < 10) {
             i = i + 1;
             goto L_41;
