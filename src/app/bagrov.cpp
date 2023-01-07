@@ -21,17 +21,27 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /*
- =======================================================================================================================
-    Translated by FOR_C, v2.3.2, on 10/16/94 at 18:28:43 ;
-    FOR_C Options SET: none ;
-    include <stdio.h> ;
-    #include <f_rt.h> ;
-    NBAGRO & BAGROV - Module zur Lesung der BAGROV-Gleichung AUFRUF: CALL NBAGRO(BAG,y,x) CALL BAGROV(BAG,x,y)
-    PROGRAMMTYP: SUBROUTINE, SPRACHE: FORTRAN80 EINGABEPARAMETER: BAG- Bagrov-Parameter mit n=BAG x - x=P/ETP mit
-    P=PMD*niedKorrFaktor [mm/a] ETP::Mittlere potentielle Verdunstung [mm/a] AUSGABEPARAMETER: y - ETR/ETP ETR::
-    Mittlere reale Verdunstung [mm/a]
- =======================================================================================================================
- */
+================================================================================
+Translated by FOR_C, v2.3.2, on 10/16/94 at 18:28:43 ;
+FOR_C Options SET: none ;
+include <stdio.h> ;
+#include <f_rt.h> ;
+NBAGRO & BAGROV - Module zur Lesung der BAGROV-Gleichung
+AUFRUF:
+  CALL NBAGRO(BAG,y,x)
+  CALL BAGROV(BAG,x,y)
+PROGRAMMTYP: SUBROUTINE,
+SPRACHE: FORTRAN80
+EINGABEPARAMETER:
+  BAG- Bagrov-Parameter mit n=BAG
+  x - x=P/ETP mit
+    P=PMD*niedKorrFaktor [mm/a]
+    ETP::Mittlere potentielle Verdunstung [mm/a]
+AUSGABEPARAMETER:
+  y - ETR/ETP mit
+    ETR::Mittlere reale Verdunstung [mm/a]
+================================================================================
+*/
 
 Bagrov::Bagrov()
 {
