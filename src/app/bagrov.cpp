@@ -256,8 +256,31 @@ L_21:
 
     /* ENDE DER NUMERISCHEN INTEGRATION */
     if (doloop) {
-        goto L_42;
-    }
+
+        delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
+        *y0 = *y0 + delta;
+
+        if (*y0 >= 1.0) {
+            *y0 = 0.99F;
+            goto L_90;
+        }
+
+        if (*y0 <= 0.0) {
+            *y0 = 0.01F;
+            goto L_90;
+        }
+
+        if (fabs(delta) < 0.01F) {
+            return;
+        }
+
+L_90:
+        if (i < 10) {
+            i = i + 1;
+            goto L_41;
+        }
+
+    } /* end of if (doloop) */
 
     if (*x0 > x) {
         *y0 = 1.0F;
@@ -273,29 +296,5 @@ L_21:
 L_41:
     doloop = true;
     goto L_21;
-
-L_42:
-    delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
-    *y0 = *y0 + delta;
-
-    if (*y0 >= 1.0) {
-        *y0 = 0.99F;
-        goto L_90;
-    }
-
-    if (*y0 <= 0.0) {
-        *y0 = 0.01F;
-        goto L_90;
-    }
-
-    if (fabs(delta) < 0.01F) {
-        return;
-    }
-
-L_90:
-    if (i < 10) {
-        i = i + 1;
-        goto L_41;
-    }
 
 }	/* end of function */
