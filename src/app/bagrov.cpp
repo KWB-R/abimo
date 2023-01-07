@@ -264,7 +264,8 @@ L_21:
             *y0 = 0.99F;
             if (i < 10) {
                 i = i + 1;
-                goto L_41;
+                doloop = true;
+                goto L_21;
             }
         }
 
@@ -272,7 +273,8 @@ L_21:
             *y0 = 0.01F;
             if (i < 10) {
                 i = i + 1;
-                goto L_41;
+                doloop = true;
+                goto L_21;
             }
         }
 
@@ -282,7 +284,8 @@ L_21:
 
         if (i < 10) {
             i = i + 1;
-            goto L_41;
+            doloop = true;
+            goto L_21;
         }
 
     } /* end of if (doloop) */
@@ -298,7 +301,6 @@ L_21:
 
     /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
 
-L_41:
     doloop = true;
     goto L_21;
 
