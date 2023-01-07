@@ -214,7 +214,7 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
     /* meiko : initialisiere i (einzige Aenderung) */
     i = 0;
 
-    float	delta, du, h, s, s1, sg, si, su, u, x;
+    float delta, du, h, s, sg, si, su, u, x;
 
     if (*x0 == 0.0) {
         *y0 = 0.0F;
@@ -248,9 +248,8 @@ L_21:
         }
 
         si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
-        s1 = 0.001F * s;
     }
-    while (fabs(s - si) > s1);
+    while (fabs(s - si) > 0.001F * s);
 
     x = si;
 
