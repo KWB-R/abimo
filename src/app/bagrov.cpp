@@ -256,12 +256,12 @@ L_21:
     x = si;
 
     /* ENDE DER NUMERISCHEN INTEGRATION */
+    bool skip = false;
+
     if (doloop) {
 
         delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
         *y0 = *y0 + delta;
-
-        bool skip = false;
 
         if (*y0 >= 1.0) {
             *y0 = 0.99F;
@@ -279,20 +279,22 @@ L_21:
 
         if (i < 10) {
             i = i + 1;
-            doloop = true;
-            goto L_21;
+            skip = true;
         }
 
     } /* end of if (doloop) */
 
-    if (*x0 > x) {
-        *y0 = 1.0F;
-        return;
+    if (!skip) {
+
+        if (*x0 > x) {
+            *y0 = 1.0F;
+            return;
+        }
+
+        *y0 = 0.5F;
+
+        i = 1;
     }
-
-    *y0 = 0.5F;
-
-    i = 1;
 
     /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
 
