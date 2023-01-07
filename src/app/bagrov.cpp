@@ -307,13 +307,8 @@ L_60:
 
 L_70:
     if (fabs(delta) < 0.01F) {
-        goto L_80;
+        return;
     }
-
-    goto L_90;
-
-L_80:
-    return;
 
 L_90:
     if (i < 10) goto L_91;
