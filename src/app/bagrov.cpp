@@ -282,24 +282,15 @@ L_42:
     *y0 = *y0 + delta;
 
     if (*y0 >= 1.0) {
-        goto L_50;
+        *y0 = 0.99F;
+        goto L_90;
     }
 
     if (*y0 <= 0.0) {
-        goto L_60;
+        *y0 = 0.01F;
+        goto L_90;
     }
 
-    goto L_70;
-
-L_50:
-    *y0 = 0.99F;
-    goto L_90;
-
-L_60:
-    *y0 = 0.01F;
-    goto L_90;
-
-L_70:
     if (fabs(delta) < 0.01F) {
         return;
     }
