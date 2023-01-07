@@ -215,6 +215,30 @@ QTextStream& qStdOut()
     return ts;
 }
 
+extern "C" __declspec(dllexport) int dllmain(
+  const char* infile,
+  const char* configfile,
+  const char* outfile
+)
+{
+    qStdOut() <<
+          "The function 'dllmain' was called with:\n" <<
+          "  infile: '" << infile << "'\n" <<
+          "  configfile: '" << configfile << "'\n" <<
+          "  outfile: '" << outfile << "'\n";
+
+    //const char *argv[] = { "input.dbf", "output.dbf" };
+    const char* argv[5];
+
+    argv[0] = "program_name";
+    argv[1] = "--config";
+    argv[2] = configfile;
+    argv[3] = infile;
+    argv[4] = outfile;
+
+    return main_batch(5, (char**) argv);
+}
+
 void writeBagrovTable(float bag_min, float bag_max, float bag_step,
                       float x_min, float x_max, float x_step)
 {
