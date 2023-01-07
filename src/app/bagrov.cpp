@@ -234,26 +234,23 @@ L_21:
     sg = 0.0F;
     su = 0.0F;
 
-L_1:
-    s = si;
-    j = j * 2;
-    du = du / 2.0F;
-    u = du / 2.0F;
-    sg = sg + su;
-    su = 0.0F;
+    do {
+        s = si;
+        j = j * 2;
+        du = du / 2.0F;
+        u = du / 2.0F;
+        sg = sg + su;
+        su = 0.0F;
 
-    for (ii = 1, _do0 = j; ii <= _do0; ii += 2)
-    {
-        su = su + 1.0F / (1.0F - (float) exp(*bagf * log(u)));
-        u = u + du;
+        for (ii = 1, _do0 = j; ii <= _do0; ii += 2) {
+            su = su + 1.0F / (1.0F - (float) exp(*bagf * log(u)));
+            u = u + du;
+        }
+
+        si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
+        s1 = 0.001F * s;
     }
-
-    si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
-    s1 = 0.001F * s;
-
-    if (fabs(s - si) > s1) {
-        goto L_1;
-    }
+    while (fabs(s - si) > s1);
 
     x = si;
 
