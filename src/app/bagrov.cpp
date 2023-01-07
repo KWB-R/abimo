@@ -227,79 +227,77 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 
     /* NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG */
 
-L_21:
-    j = 1;
-    du = 2.0F **y0;
-    h = 1.0F + 1.0F / (1.0F - (float) exp(*bagf * log(*y0)));
-    si = h * du / 4.0F;
-    sg = 0.0F;
-    su = 0.0F;
+    while (true) {
 
-    do {
-        s = si;
-        j *= 2;
-        du /= 2.0F;
-        u = du / 2.0F;
-        sg += su;
-
+        j = 1;
+        du = 2.0F **y0;
+        h = 1.0F + 1.0F / (1.0F - (float) exp(*bagf * log(*y0)));
+        si = h * du / 4.0F;
+        sg = 0.0F;
         su = 0.0F;
 
-        for (ii = 1; ii <= j; ii += 2) {
-            su += 1.0F / (1.0F - (float) exp(*bagf * log(u)));
-            u += du;
+        do {
+            s = si;
+            j *= 2;
+            du /= 2.0F;
+            u = du / 2.0F;
+            sg += su;
+            su = 0.0F;
+
+            for (ii = 1; ii <= j; ii += 2) {
+                su += 1.0F / (1.0F - (float) exp(*bagf * log(u)));
+                u += du;
+            }
+
+            si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
+        }
+        while (fabs(s - si) > 0.001F * s);
+
+        x = si;
+
+        /* ENDE DER NUMERISCHEN INTEGRATION */
+        bool skip = false;
+
+        if (doloop) {
+
+            delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
+            *y0 = *y0 + delta;
+
+            if (*y0 >= 1.0) {
+                *y0 = 0.99F;
+                skip = true;
+            }
+
+            if (!skip && *y0 <= 0.0) {
+                *y0 = 0.01F;
+                skip = true;
+            }
+
+            if (!skip && fabs(delta) < 0.01F) {
+                return;
+            }
+
+            if (i < 10) {
+                i = i + 1;
+                skip = true;
+            }
+
+        } /* end of if (doloop) */
+
+        if (!skip) {
+
+            if (*x0 > x) {
+                *y0 = 1.0F;
+                return;
+            }
+
+            *y0 = 0.5F;
+            i = 1;
         }
 
-        si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
-    }
-    while (fabs(s - si) > 0.001F * s);
+        /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
+        doloop = true;
 
-    x = si;
-
-    /* ENDE DER NUMERISCHEN INTEGRATION */
-    bool skip = false;
-
-    if (doloop) {
-
-        delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
-        *y0 = *y0 + delta;
-
-        if (*y0 >= 1.0) {
-            *y0 = 0.99F;
-            skip = true;
-        }
-
-        if (!skip && *y0 <= 0.0) {
-            *y0 = 0.01F;
-            skip = true;
-        }
-
-        if (!skip && fabs(delta) < 0.01F) {
-            return;
-        }
-
-        if (i < 10) {
-            i = i + 1;
-            skip = true;
-        }
-
-    } /* end of if (doloop) */
-
-    if (!skip) {
-
-        if (*x0 > x) {
-            *y0 = 1.0F;
-            return;
-        }
-
-        *y0 = 0.5F;
-
-        i = 1;
-    }
-
-    /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
-
-    doloop = true;
-
-    goto L_21;
+    } /* end of while (true) */
 
 }	/* end of function */
