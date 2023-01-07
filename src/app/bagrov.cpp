@@ -296,13 +296,10 @@ L_42:
     }
 
 L_90:
-    if (i < 10) goto L_91;
-    goto L_92;
+    if (i < 10) {
+        i = i + 1;
+        goto L_41;
+    }
 
-L_91:
-    i = i + 1;
-    goto L_41;
-
-L_92:
     return;
 }	/* end of function */
