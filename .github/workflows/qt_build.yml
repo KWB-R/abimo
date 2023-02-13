@@ -1,0 +1,77 @@
+name: QT Build
+
+on: [push, pull_request]
+
+jobs:
+  windows:
+    name: Windows (Build only)
+    runs-on: windows-latest
+    steps:
+      - name: MSVC Environment Setup
+        uses: ilammy/msvc-dev-cmd@v1.11.0
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+      - name: Run QMake
+        run: qmake src/app/app.pro
+      - name: Build
+        run: nmake release
+      - name: Deploy
+        run: windeployqt.exe release
+      - name: Upload windows release
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows_abimo_release
+          path: release
+  linux_1:
+    name: Linux Ubuntu 20.04 (Build only)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+      - name: Run QMake
+        run: qmake src/app/app.pro
+      - name: Build
+        run: make
+      - name: Upload linux release
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux_ubuntu-20.04_abimo_release
+          path: release
+  linux_2:
+    name: Linux Ubuntu 22.04 (Build only)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+      - name: Run QMake
+        run: qmake src/app/app.pro
+      - name: Build
+        run: make
+      - name: Upload linux release
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux_ubuntu-22.04_abimo_release
+          path: release
+  mac:
+    name: Mac (Build only)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+      - name: Run QMake
+        run: qmake src/app/app.pro
+      - name: Build
+        run: make   
+      - name: Upload macos release
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos_abimo_release
+          path: release

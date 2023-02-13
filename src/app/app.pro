@@ -4,7 +4,7 @@
 }
 
 #TEMPLATE = app
-#TARGET = Abimo
+TARGET = Abimo
 #DEPENDPATH += .
 #INCLUDEPATH += .
 QT += \
@@ -13,6 +13,9 @@ QT += \
     xml \
 
 #CONFIG += console
+
+# https://stackoverflow.com/a/4563512
+CONFIG *= debug_and_release debug_and_release_target
 
 HEADERS += \
     bagrov.h \
