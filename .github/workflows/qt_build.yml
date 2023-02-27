@@ -66,11 +66,11 @@ jobs:
         run: ls -R
       - name: Update binary in latest-dev release
         uses: pyTooling/Actions/releaser@main
-          with:
-            tag: latest-dev
-            rm: true
-            token: ${{ secrets.GITHUB_TOKEN }}
-            files: release/*
+        with:
+          tag: latest-dev
+          rm: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: release/*
   mac:
     name: Mac (Build only)
     runs-on: macos-latest
