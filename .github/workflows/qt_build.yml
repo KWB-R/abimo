@@ -58,6 +58,19 @@ jobs:
         with:
           name: linux_ubuntu-22.04_abimo_release
           path: release
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: linux_ubuntu-22.04_abimo_release
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Update binary in latest-dev release
+        uses: pyTooling/Actions/releaser@main
+          with:
+            tag: latest-dev
+            rm: true
+            token: ${{ secrets.GITHUB_TOKEN }}
+            files: release/*
   mac:
     name: Mac (Build only)
     runs-on: macos-latest
@@ -75,15 +88,3 @@ jobs:
         with:
           name: macos_abimo_release
           path: release
-      - uses: actions/download-artifact@v3
-        with:
-          name: macos_abimo_release
-      - name: Display structure of downloaded files
-        run: ls -R
-      - name: Update binary in latest-dev release
-        uses: pyTooling/Actions/releaser@main
-        with:
-          tag: latest-dev
-          rm: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: release/*
