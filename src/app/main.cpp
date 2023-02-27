@@ -215,7 +215,16 @@ QTextStream& qStdOut()
     return ts;
 }
 
-extern "C" __declspec(dllexport) int dllmain(
+#if defined(_MSC_VER)
+    #define MY_LIB_API __declspec(dllexport) // Microsoft-only, if used as signature, breaks build on other platforms.
+#elif defined(__GNUC__)
+    #define MY_LIB_API __attribute__((visibility("default"))) // GCC
+#else
+    #define MY_LIB_API // Most compilers export all the symbols by default. We hope for the best here.
+    #pragma warning Unknown dynamic link import/export semantics.
+#endif
+
+extern "C" MY_LIB_API int dllmain(
   const char* infile,
   const char* configfile,
   const char* outfile
