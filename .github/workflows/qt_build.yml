@@ -70,8 +70,15 @@ jobs:
         run: qmake src/app/app.pro
       - name: Build
         run: make   
-      - name: Upload macos release
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos_abimo_release
           path: release
+      - uses: actions/download-artifact@v3
+        with:
+          name: macos_artifact
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Update binary in latest-dev release
+        run: echo "todo"
