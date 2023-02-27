@@ -1,6 +1,7 @@
 name: QT Build
 
-on: [push, pull_request]
+#on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   windows:
@@ -77,7 +78,7 @@ jobs:
           path: release
       - uses: actions/download-artifact@v3
         with:
-          name: macos_artifact
+          name: macos_abimo_release
       - name: Display structure of downloaded files
         run: ls -R
       - name: Update binary in latest-dev release
