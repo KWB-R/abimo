@@ -69,7 +69,7 @@ jobs:
       - name: Run QMake
         run: qmake src/app/app.pro
       - name: Build
-        run: make   
+        run: make
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -81,4 +81,9 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: Update binary in latest-dev release
-        run: echo "todo"
+        uses: pyTooling/Actions/releaser@main
+        with:
+          tag: latest-dev
+          rm: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: release/*
