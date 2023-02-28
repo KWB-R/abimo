@@ -48,7 +48,7 @@ Bagrov::Bagrov()
 }
 
 const float Bagrov::aa[]= {
-    // [0..5] eyn > UPPER_LIMIT_EYN
+    // [0..5] eyn <= UPPER_LIMIT_EYN
     0.9946811499F, //  0
     1.213648255F,  //  1
     -1.350801214F, //  2
@@ -149,7 +149,6 @@ float Bagrov::nbagro(float bage, float x)
 
         // If eyn, bag are in a certain range, return y0 (1.0 at maximum)
         if ((eyn > 0.9F) || (eyn >= UPPER_LIMIT_EYN && bag > 4.0F)) {
-            //*y = MIN(y0, 1.0);
             return MIN(y0, 1.0);
         }
 
@@ -172,7 +171,7 @@ float Bagrov::nbagro(float bage, float x)
         {
             h *= eyn;
             w = aa[i - 1] * h;
-            j = i - ia + 1; /* cls J=I-IA+1 */
+            j = i - ia + 1; // cls J = I - IA + 1
             sum_2 += w / (j * (float) bag + 1.0F);
             sum_1 += w;
         }
@@ -208,12 +207,12 @@ FIXME:
 */
 void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 {
-    bool doloop; /* LOGICAL16 */
+    bool doloop; // LOGICAL16
     int i, ii, j;
 
     qDebug() << "In bagrov()...";
 
-    /* meiko : initialisiere i (einzige Aenderung) */
+    // meiko : initialisiere i (einzige Aenderung)
     i = 0;
 
     float delta, du, h, s, sg, si, su, u, x;
@@ -227,7 +226,7 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 
     doloop = false;
 
-    /* NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG */
+    // NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG
 
     while (true) {
 
@@ -257,7 +256,7 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 
         x = si;
 
-        /* ENDE DER NUMERISCHEN INTEGRATION */
+        // ENDE DER NUMERISCHEN INTEGRATION
         bool skip = false;
 
         if (doloop) {
@@ -284,7 +283,7 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
                 skip = true;
             }
 
-        } /* end of if (doloop) */
+        } // end of if (doloop)
 
         if (!skip) {
 
@@ -297,9 +296,9 @@ void Bagrov::bagrov(float *bagf, float *x0, float *y0)
             i = 1;
         }
 
-        /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
+        // SCHLEIFE I = 1(1)10 ZUR BERECHNUNG VON DELTA
         doloop = true;
 
-    } /* end of while (true) */
+    } // end of while (true)
 
-}	/* end of function */
+} // end of function
