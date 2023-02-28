@@ -64,13 +64,19 @@ jobs:
           name: linux_ubuntu-22.04_abimo_release
       - name: Display structure of downloaded files
         run: ls -R
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: linux_ubuntu-22.04_abimo_release.zip
+          path: release
+          #exclusions: '*.git* /*node_modules/* .editorconfig'
       - name: Update binary in latest-dev release
         uses: pyTooling/Actions/releaser@main
         with:
           tag: latest-dev
           rm: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: release/*
+          files: linux_ubuntu-22.04_abimo_release.zip
   mac:
     name: Mac (Build only)
     runs-on: macos-latest
