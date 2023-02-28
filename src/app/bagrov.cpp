@@ -152,15 +152,10 @@ float Bagrov::nbagro(float bage, float x)
             return MIN(y0, 1.0);
         }
 
-        // Set start and end index (?), depending on the value of eyn
-        if (eyn > UPPER_LIMIT_EYN) {
-            ia = 8;
-            ie = 16;
-        }
-        else {
-            ia = 2;
-            ie = 6;
-        }
+        // Set start index ia and end index ie, depending on the value of eyn
+        bool is_high_eyn = (eyn > UPPER_LIMIT_EYN);
+        ia = is_high_eyn ?  8 : 2;
+        ie = is_high_eyn ? 16 : 6;
 
         sum_1 = 0.0F;
         sum_2 = 0.0F;
