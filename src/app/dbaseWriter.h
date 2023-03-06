@@ -25,9 +25,9 @@ public:
     DbaseWriter(QString &file, InitValues &initValues);
     bool write();
     void addRecord();
-    void setRecordField(int num, QString value);
+    void setRecordField(int i, QString value);
+    void setRecordField(int i, float value);
     void setRecordField(QString name, QString value);
-    void setRecordField(int num, float value);
     void setRecordField(QString name, float value);
     QString getError();
 
@@ -38,7 +38,7 @@ private:
     QHash<QString, int> hash;
     QString error;
     int lengthOfEachRecord;
-    int recNum;
+    int numberOfRecords;
     DbaseField fields[countFields];
     int writeFileHeader(QByteArray &data);
     void writeFileData(QByteArray &data);

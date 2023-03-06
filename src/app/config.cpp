@@ -171,16 +171,16 @@ void Config::initUsageAndTypeToTupleHash()
 //==============================================================================
 //    Bestimmung der Durchwurzelungstiefe TWS
 //==============================================================================
-float Config::getTWS(int ert, Usage nutz)
+float Config::getRootingDepth(Usage usage, int yield)
 {
     // Zuordnung Durchwurzelungstiefe in Abhaengigkeit der Nutzung
-    switch(nutz) {
+    switch(usage) {
 
         // D - Devastierung
         case Usage::vegetationless_D: return 0.2F;
 
         // L - landwirtschaftliche Nutzung
-        case Usage::agricultural_L: return (ert <= 50) ? 0.6F : 0.7F;
+        case Usage::agricultural_L: return (yield <= 50) ? 0.6F : 0.7F;
 
         // K - Kleingaerten
         case Usage::horticultural_K: return 0.7F;
@@ -193,9 +193,9 @@ float Config::getTWS(int ert, Usage nutz)
     }
 }
 
-UsageResult Config::getUsageResult(int usage, int type, QString code)
+UsageResult Config::getUsageResult(int usageID, int type, QString code)
 {
-    if (!usageHash.contains(usage)) {
+    if (!usageHash.contains(usageID)) {
         return {
             -1,
             QString("\r\nDiese  Meldung sollte nie erscheinen: \r\n") +
@@ -203,7 +203,7 @@ UsageResult Config::getUsageResult(int usage, int type, QString code)
         };
     }
 
-    return lookup(usageHash[usage], type, code);
+    return lookup(usageHash[usageID], type, code);
 }
 
 UsageResult Config::lookup(QHash<int,int>hash, int type, QString code)

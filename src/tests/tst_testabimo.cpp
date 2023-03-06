@@ -126,23 +126,23 @@ void TestAbimo::test_xmlReader()
         <item key="Belaglsklasse3" value="0.60" />
         <item key="Belaglsklasse4" value="0.90" />*/
 
-    QVERIFY(qFuzzyCompare(iv.getInfdach(), 0.0F));
-    QVERIFY(qFuzzyCompare(iv.getInfbel1(), 0.1F));
-    QVERIFY(qFuzzyCompare(iv.getInfbel2(), 0.3F));
-    QVERIFY(qFuzzyCompare(iv.getInfbel3(), 0.6F));
-    QVERIFY(qFuzzyCompare(iv.getInfbel4(), 0.9F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorRoof(), 0.0F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface1(), 0.1F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface2(), 0.3F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface3(), 0.6F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface4(), 0.9F));
 }
 
 void TestAbimo::test_config_getTWS()
 {
     // Create configuration object
     Config config;
-    QVERIFY(qFuzzyCompare(config.getTWS(50, Usage::vegetationless_D), 0.2F));
-    QVERIFY(qFuzzyCompare(config.getTWS(50, Usage::agricultural_L), 0.6F));
-    QVERIFY(qFuzzyCompare(config.getTWS(51, Usage::agricultural_L), 0.7F));
-    QVERIFY(qFuzzyCompare(config.getTWS(50, Usage::horticultural_K), 0.7F));
-    QVERIFY(qFuzzyCompare(config.getTWS(50, Usage::forested_W), 1.0F));
-    QVERIFY(qFuzzyCompare(config.getTWS(50, Usage::unknown), 0.2F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::vegetationless_D, 50), 0.2F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::agricultural_L, 50), 0.6F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::agricultural_L, 51), 0.7F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::horticultural_K, 50), 0.7F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::forested_W, 50), 1.0F));
+    QVERIFY(qFuzzyCompare(config.getRootingDepth(Usage::unknown, 50), 0.2F));
 }
 
 void TestAbimo::test_calc()
@@ -153,14 +153,14 @@ void TestAbimo::test_calc()
     QString outFile_noConfig = dataFilePath("abimo_2019_mitstrassenout_3.2.1_default-config.dbf");
     QString outFile_xmlConfig = dataFilePath("abimo_2019_mitstrassenout_3.2.1_xml-config.dbf");
 
-    Calculation::calculate(inputFile, "", outputFile, false);
+    Calculation::runCalculation(inputFile, "", outputFile, false);
 
     //QVERIFY(Helpers::filesAreIdentical(outputFile, referenceFile));
     QVERIFY(dbfHeadersAreIdentical(outputFile, outFile_noConfig));
     QVERIFY(dbfStringsAreIdentical(outputFile, outFile_noConfig));
 
     // Run the simulation with initial values from config file
-    Calculation::calculate(inputFile, configFile, outputFile);
+    Calculation::runCalculation(inputFile, configFile, outputFile);
     QVERIFY(dbfStringsAreIdentical(outputFile, outFile_xmlConfig));
 }
 
@@ -240,7 +240,7 @@ bool TestAbimo::dbfStringsAreIdentical(QString file_1, QString file_2)
     };
 
     return Helpers::stringsAreEqual(
-        reader_1.getVals(), reader_2.getVals(), nrows_1 * ncols_1, 5, true
+        reader_1.getValues(), reader_2.getValues(), nrows_1 * ncols_1, 5, true
     );
 }
 

@@ -15,9 +15,9 @@
 #include "dbaseReader.h"
 #include "helpers.h"
 
-DbaseReader::DbaseReader(const QString &i_file):
-    file(i_file),
-    vals(0),
+DbaseReader::DbaseReader(const QString &file):
+    file(file),
+    values(0),
     numberOfRecords(0),
     lengthOfHeader(0),
     lengthOfEachRecord(0),
@@ -26,8 +26,8 @@ DbaseReader::DbaseReader(const QString &i_file):
 
 DbaseReader::~DbaseReader()
 {
-    if (vals != 0) {
-        delete[] vals;
+    if (values != 0) {
+        delete[] values;
     }
 }
 
@@ -41,9 +41,9 @@ QString DbaseReader::getFullError()
     return fullError;
 }
 
-QString* DbaseReader::getVals()
+QString* DbaseReader::getValues()
 {
-    return vals;
+    return values;
 }
 
 QStringList DbaseReader::requiredFields()
@@ -182,12 +182,12 @@ bool DbaseReader::read()
     QBuffer buffer(&arr);
     buffer.open(QIODevice::ReadOnly);
 
-    vals = new QString[numberOfRecords * countFields];
+    values = new QString[numberOfRecords * countFields];
 
     for (int i = 0; i < numberOfRecords; i++) {
         for (int j = 0; j < countFields; j++) {
             QString s = buffer.read(fields[j].getFieldLength()).trimmed();
-            vals[i * countFields + j] = ((s.size() > 0) ? s : "0");
+            values[i * countFields + j] = ((s.size() > 0) ? s : "0");
         }
         buffer.read(1);
     }
@@ -216,7 +216,7 @@ QString DbaseReader::getRecord(int num, int field)
         return 0;
     }
 
-    return vals[num * countFields + field];
+    return values[num * countFields + field];
 }
 
 int DbaseReader::getCountFields()
@@ -347,39 +347,39 @@ int DbaseReader::computeCountFields(int headerLength)
 
 void DbaseReader::fillRecord(int k, abimoRecord& record, bool debug)
 {
-    record.BELAG1_fraction = floatFraction(getRecord(k, "BELAG1"));
-    record.BELAG2_fraction = floatFraction(getRecord(k, "BELAG2"));
-    record.BELAG3_fraction = floatFraction(getRecord(k, "BELAG3"));
-    record.BELAG4_fraction = floatFraction(getRecord(k, "BELAG4"));
-    record.BEZIRK = getRecord(k, "BEZIRK").toInt();
-    record.CODE = getRecord(k, "CODE");
-    record.FELD_150 = getRecord(k, "FELD_150").toInt();
-    record.FELD_30 = getRecord(k, "FELD_30").toInt();
-    record.FLGES = getRecord(k, "FLGES").toFloat();
-    record.FLUR = getRecord(k, "FLUR").toFloat();
-    record.KAN_BEB_fraction = floatFraction(getRecord(k, "KAN_BEB"));
-    record.KAN_STR_fraction = floatFraction(getRecord(k, "KAN_STR"));
-    record.KAN_VGU_fraction = floatFraction(getRecord(k, "KAN_VGU"));
-    record.NUTZUNG = Helpers::stringToInt(
+    record.unbuiltSealedFractionSurface1 = floatFraction(getRecord(k, "BELAG1"));
+    record.unbuiltSealedFractionSurface2 = floatFraction(getRecord(k, "BELAG2"));
+    record.unbuiltSealedFractionSurface3 = floatFraction(getRecord(k, "BELAG3"));
+    record.unbuiltSealedFractionSurface4 = floatFraction(getRecord(k, "BELAG4"));
+    record.district = getRecord(k, "BEZIRK").toInt();
+    record.code = getRecord(k, "CODE");
+    record.fieldCapacity_150 = getRecord(k, "FELD_150").toInt();
+    record.fieldCapacity_30 = getRecord(k, "FELD_30").toInt();
+    record.mainArea = getRecord(k, "FLGES").toFloat();
+    record.depthToWaterTable = getRecord(k, "FLUR").toFloat();
+    record.builtSealedFractionConnected = floatFraction(getRecord(k, "KAN_BEB"));
+    record.roadSealedFractionConnected = floatFraction(getRecord(k, "KAN_STR"));
+    record.unbuiltSealedFractionConnected = floatFraction(getRecord(k, "KAN_VGU"));
+    record.usage = Helpers::stringToInt(
         getRecord(k, "NUTZUNG"),
         QString("k: %1, NUTZUNG = ").arg(QString::number(k)),
         debug
     );
-    record.PROBAU_fraction = Helpers::stringToFloat(
+    record.mainFractionBuiltSealed = Helpers::stringToFloat(
         getRecord(k, "PROBAU"),
         QString("k: %1, PROBAU = ").arg(QString::number(k)),
         debug
     ) / 100.0F;
-    record.PROVGU_fraction = floatFraction(getRecord(k, "PROVGU"));
-    record.REGENJA = getRecord(k, "REGENJA").toInt();
-    record.REGENSO = getRecord(k, "REGENSO").toInt();
-    record.STR_BELAG1_fraction = floatFraction(getRecord(k, "STR_BELAG1"));
-    record.STR_BELAG2_fraction = floatFraction(getRecord(k, "STR_BELAG2"));
-    record.STR_BELAG3_fraction = floatFraction(getRecord(k, "STR_BELAG3"));
-    record.STR_BELAG4_fraction = floatFraction(getRecord(k, "STR_BELAG4"));
-    record.TYP = getRecord(k, "TYP").toInt();
-    record.VGSTRASSE_fraction = floatFraction(getRecord(k, "VGSTRASSE"));
-    record.STR_FLGES = getRecord(k, "STR_FLGES").toFloat();
+    record.mainFractionUnbuiltSealed = floatFraction(getRecord(k, "PROVGU"));
+    record.precipitationYear = getRecord(k, "REGENJA").toInt();
+    record.precipitationSummer = getRecord(k, "REGENSO").toInt();
+    record.roadSealedFractionSurface1 = floatFraction(getRecord(k, "STR_BELAG1"));
+    record.roadSealedFractionSurface2 = floatFraction(getRecord(k, "STR_BELAG2"));
+    record.roadSealedFractionSurface3 = floatFraction(getRecord(k, "STR_BELAG3"));
+    record.roadSealedFractionSurface4 = floatFraction(getRecord(k, "STR_BELAG4"));
+    record.type = getRecord(k, "TYP").toInt();
+    record.roadFractionSealed = floatFraction(getRecord(k, "VGSTRASSE"));
+    record.roadArea = getRecord(k, "STR_FLGES").toFloat();
 }
 
 float DbaseReader::floatFraction(QString string)

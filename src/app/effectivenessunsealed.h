@@ -6,15 +6,15 @@
 class EffectivenessUnsealed
 {
 private:
-    const static float EKA[];
-    static float getG02(int nFK);
-    static float bag0_forest(float G020);
-    static float bag0_default(float G020, int yield, int irrigation, bool notSummer);
-    static float nonSummerCorrected(float x, int irrigation);
+    const static float EFFECTIVENESS_PARAMETER_VALUES[];
+    const static float G02_VALUES[];
+    static float bag0_forest(float g02);
+    static float bag0_default(float g02, int yield, int irrigation, bool notSummer);
+    static float nonSummerCorrectionFactor(int irrigation);
 
 public:
     EffectivenessUnsealed();
-    static float getNUV(PDR &record);
+    static float calculate(PDR &record);
 };
 
 #endif // EFFECTIVENESSUNSEALED_H

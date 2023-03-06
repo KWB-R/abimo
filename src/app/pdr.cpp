@@ -11,34 +11,32 @@
 
 PDR::PDR():
     wIndex(0),
-    nFK(0),
-    FLW(0),
-    NUT(Usage::unknown),
-    R(0),
-    ROW(0),
-    RI(0),
-    VER(0),
-    ERT(0),
-    BER(0),
-    P1(0.0F),
-    ETP(0),
-    KR(0),
-    P1S(0.0F),
-    ETPS(0)
+    usableFieldCapacity(0),
+    depthToWaterTable(0),
+    usage(Usage::unknown),
+    totalRunoff(0),
+    runoff(0),
+    infiltrationRate(0),
+    mainPercentageSealed(0),
+    yieldPower(0),
+    irrigation(0),
+    precipitationYear(0.0F),
+    longtimeMeanPotentialEvaporation(0),
+    meanPotentialCapillaryRiseRate(0),
+    precipitationSummer(0.0F),
+    potentialEvaporationSummer(0)
 {}
 
 void PDR::setUsageYieldIrrigation(Usage usage, int yield, int irrigation)
 {
-    this->NUT = usage;
-    this->ERT = yield;
-    this->BER = irrigation;
+    this->usage = usage;
+    this->yieldPower = yield;
+    this->irrigation = irrigation;
 }
 
 void PDR::setUsageYieldIrrigation(UsageTuple tuple)
 {
-    this->NUT = tuple.usage;
-    this->ERT = tuple.yield;
-    this->BER = tuple.irrigation;
+    setUsageYieldIrrigation(tuple.usage, tuple.yield, tuple.irrigation);
 }
 
 // mittlere Zahl der Wachstumstage

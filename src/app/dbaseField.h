@@ -21,7 +21,7 @@ public:
     QString getType();
     int getFieldLength();
     int getDecimalCount();
-    void setFieldLength(int);
+    void setFieldLength(int length);
     void set(QString name, QString type, int decimalCount);
 
 private:
