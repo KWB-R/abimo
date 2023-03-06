@@ -167,7 +167,7 @@ int main_batch(int argc, char *argv[])
     Calculation calculator(dbReader, initValues, logStream);
 
     qDebug() << "Start the calculation";
-    calculator.calc(outputFileName);
+    calculator.calculate(outputFileName);
     qDebug() << "End of calculation (Results are in " << outputFileName << ").";
 
     return -1;

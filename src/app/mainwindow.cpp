@@ -89,7 +89,7 @@ void MainWindow::userCancel()
     setText("Berechnungen abgebrochen.");
 
     if (calc != 0) {
-        calc->stop();
+        calc->stopProcessing();
     }
 
     app->processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -213,7 +213,7 @@ void MainWindow::computeFile()
     );
 
     // Do the calculation
-    bool success = calc->calc(outputFileName);
+    bool success = calc->calculate(outputFileName);
 
     // Report about success or failure
     if (success) {
@@ -249,11 +249,11 @@ void MainWindow::reportSuccess(
 
     Counters counters = calc->getCounters();
 
-    protCount.setNum(counters.protcount);
-    nutzungIstNull.setNum(counters.nutzungIstNull);
-    keineFlaechenAngegeben.setNum(counters.keineFlaechenAngegeben);
-    readRecCount.setNum(counters.totalRecRead);
-    writeRecCount.setNum(counters.totalRecWrite);
+    protCount.setNum(counters.recordsProtocol);
+    nutzungIstNull.setNum(counters.noUsageGiven);
+    keineFlaechenAngegeben.setNum(counters.noAreaGiven);
+    readRecCount.setNum(counters.recordsRead);
+    writeRecCount.setNum(counters.recordsWritten);
 
     setText(
         "Berechnungen mit " + protCount + " Fehlern beendet.\n" +
@@ -266,18 +266,18 @@ void MainWindow::reportSuccess(
     protokollStream << "\r\nBei der Berechnung traten " << protCount <<
         " Fehler auf.\r\n";
 
-    if (counters.keineFlaechenAngegeben != 0) {
+    if (counters.noAreaGiven != 0) {
         protokollStream << "\r\nBei " + keineFlaechenAngegeben +
             " Flaechen deren Wert 0 war wurde 100 eingesetzt.\r\n";
     }
 
-    if (counters.nutzungIstNull != 0) {
+    if (counters.noUsageGiven != 0) {
         protokollStream << "\r\nBei " + nutzungIstNull +
             " Records war die Nutzung 0, diese wurden ignoriert.\r\n";
     }
 
-    if (counters.totalBERtoZeroForced != 0) {
-        protokollStream << "\r\nBei " << counters.totalBERtoZeroForced <<
+    if (counters.irrigationForcedToZero != 0) {
+        protokollStream << "\r\nBei " << counters.irrigationForcedToZero <<
             " Records wurde BER==0 erzwungen.\r\n";
     }
 

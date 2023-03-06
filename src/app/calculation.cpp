@@ -1,7 +1,7 @@
-/***************************************************************************
- * For copyright information please see COPYRIGHT in the base directory
- * of this repository (https://github.com/KWB-R/abimo).
- ***************************************************************************/
+// ***************************************************************************
+// * For copyright information please see COPYRIGHT in the base directory
+// * of this repository (https://github.com/KWB-R/abimo).
+// ***************************************************************************
 
 #include <math.h>
 #include <QDebug>
@@ -19,59 +19,71 @@
 #include "initvalues.h"
 #include "pdr.h"
 
-// potential ascent rate TAS (column labels for matrix 'Calculation::ijkr_S')
-const float Calculation::iTAS[] = {
+// Macro to calculate the number of elements in an array
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+
+// Potential rate of ascent (column labels for matrix
+// meanPotentialCapillaryRiseRateSummer)
+// old: iTAS
+const float Calculation::POTENTIAL_RATES_OF_ASCENT[] = {
     0.1F, 0.2F, 0.3F, 0.4F, 0.5F, 0.6F, 0.7F, 0.8F,
     0.9F, 1.0F, 1.2F, 1.4F, 1.7F, 2.0F, 2.3F
 };
 
 // soil type unknown - default soil type used in the following: sand
 
-// Usable field capacity nFK (row labels for matrix 'Calculation::ijkr_S')
-const float Calculation::inFK_S[] = {
+// Usable field capacity (row labels for matrix
+// meanPotentialCapillaryRiseRateSummer)
+// old: inFK_S
+const float Calculation::USABLE_FIELD_CAPACITIES[] = {
     8.0F, 9.0F, 14.0F, 14.5F, 15.5F, 17.0F, 20.5F
 };
 
-/* Mean potential capillary rise rate kr [mm/d] of a summer season depending on:
- * potential ascent rate TAS (one column each) and
- * usable field capacity nFK (one row each) */
-const float Calculation::ijkr_S[] = {
-    7.0F, 6.0F, 5.0F, 1.5F, 0.5F, 0.2F, 0.1F, 0.0F, 0.0F, 0.0F,  0.0F , 0.0F, 0.0F , 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 5.0F, 3.0F, 1.2F, 0.5F, 0.2F, 0.1F, 0.0F,  0.0F , 0.0F, 0.0F , 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 3.0F, 1.5F, 0.7F, 0.3F, 0.15F, 0.1F , 0.0F, 0.0F , 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 3.0F, 2.0F, 1.0F, 0.7F, 0.4F,  0.15F, 0.1F, 0.0F , 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 4.5F, 2.5F, 1.5F, 0.7F, 0.4F,  0.15F, 0.1F, 0.0F , 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 5.0F, 3.5F, 2.0F, 1.5F, 0.8F,  0.3F , 0.1F, 0.05F, 0.0F, 0.0F,
-    7.0F, 7.0F, 6.0F, 6.0F, 6.0F, 5.0F, 5.0F, 5.0F, 3.0F, 2.0F,  1.0F , 0.5F, 0.15F, 0.0F, 0.0F
+// Mean potential capillary rise rate kr [mm/d] of a summer season depending on:
+// - Potential rate of ascent (one column each) and
+// - Usable field capacity (one row each)
+// old: ijkr_S
+const float Calculation::MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER[] = {
+    7.0F, 6.0F, 5.0F, 1.5F, 0.5F, 0.2F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 5.0F, 3.0F, 1.2F, 0.5F, 0.2F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 3.0F, 1.5F, 0.7F, 0.3F, 0.15F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 3.0F, 2.0F, 1.0F, 0.7F, 0.4F, 0.15F, 0.1F, 0.0F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 4.5F, 2.5F, 1.5F, 0.7F, 0.4F, 0.15F, 0.1F, 0.0F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 5.0F, 3.5F, 2.0F, 1.5F, 0.8F, 0.3F, 0.1F, 0.05F, 0.0F, 0.0F,
+    7.0F, 7.0F, 6.0F, 6.0F, 6.0F, 5.0F, 5.0F, 5.0F, 3.0F, 2.0F, 1.0F, 0.5F, 0.15F, 0.0F, 0.0F
 };
 
-Calculation::Calculation(DbaseReader& dbR, InitValues & init, QTextStream & protoStream):
-    initValues(init),
-    protokollStream(protoStream),
-    dbReader(dbR),
-    regenja(0),
-    regenso(0),
-    RDV(0),
-    R1V(0),
-    R2V(0),
-    R3V(0),
-    R4V(0),
-    RUV(0),
-    ROWVOL(0),
-    RIVOL(0),
-    RVOL(0),
-    TAS(0),
-    lenTAS(15),
-    lenS(7),
+Calculation::Calculation(
+        DbaseReader &dbaseReader,
+        InitValues &initValues,
+        QTextStream &protocolStream
+):
+    initValues(initValues),
+    protocolStream(protocolStream),
+    dbReader(dbaseReader),
+    precipitationYear(0), // old: regenja
+    precipitationSummer(0), // old: regenso
+    bagrovValueRoof(0), // old: RDV
+    bagrovValueSurface1(0), // old: R1V
+    bagrovValueSurface2(0), // old: R2V
+    bagrovValueSurface3(0), // old: R3V
+    bagrovValueSurface4(0), // old: R4V
+    unsealedSurfaceRunoff(0), // old: RUV
+    surfaceRunoffFlow(0), // old: ROWVOL
+    infiltrationFlow(0), // old: RIVOL
+    totalRunoffFlow(0), // old: RVOL
+    potentialCapillaryRise(0), // old: TAS
+    n_POTENTIAL_RATES_OF_ASCENT(ARRAY_SIZE(POTENTIAL_RATES_OF_ASCENT)), // old: lenTAS
+    n_USABLE_FIELD_CAPACITIES(ARRAY_SIZE(USABLE_FIELD_CAPACITIES)), // old: lenS
     counters({0, 0, 0, 0L, 0L, 0L}),
-    weiter(true)
+    continueProcessing(true) // old: weiter
 {
     config = new Config();
 }
 
-void Calculation::stop()
+void Calculation::stopProcessing()
 {
-    weiter = false;
+    continueProcessing = false;
 }
 
 Counters Calculation::getCounters()
@@ -85,268 +97,371 @@ QString Calculation::getError()
 }
 
 // =============================================================================
-// Diese Funktion importiert die Datensaetze aus der DBASE-Datei FileName in das DA Feld ein
-// (GWD-Daten). Parameter: out-file Rueckgabewert: BOOL TRUE, wenn das Einlesen der Datei
-// erfolgreich war.
+// Diese Funktion importiert die Datensaetze aus der DBASE-Datei FileName in das
+// DA Feld ein (GWD-Daten).
+// Parameter: outputFile: Name der Ausgabedatei
+//            debug: whether or not to show debug messages
+// Rueckgabewert: BOOL. TRUE, wenn das Einlesen der Datei erfolgreich war.
 // =============================================================================
-bool Calculation::calc(QString fileOut, bool debug)
+bool Calculation::calculate(QString outputFile, bool debug)
 {
     // Current Abimo record (represents one row of the input dbf file)
     abimoRecord record;
 
-    // variables for calculation
+    // Number of processed records
     int index = 0;
     
-    // Versiegelungsgrad Dachflaechen / sonst. versiegelte Flaechen / Strassen
-    // vegree of sealing of roof surfaces / other sealed surfaces / roads
-    float vgd, vgb, vgs;
-
-    // Kanalisierungsgrad Dachflaechen / sonst. versiegelte Flaechen / Strassen
-    // degree of canalization for roof surfaces / other sealed surfaces / roads
-    float kd, kb, ks;
-    
-    // Anteil der jeweiligen Belagsklasse
-    // share of respective pavement class
-    float bl1, bl2, bl3, bl4;
-
-    // Anteil der jeweiligen Strassenbelagsklasse
-    // share of respective road pavement class
-    float bls1, bls2, bls3, bls4;
-
-    // Gesamtflaeche Bebauung / Strasse
-    // total area of building development / road
-    float fb, fs;
-
-    // Verhaeltnis Bebauungsflaeche / Strassenflaeche zu Gesamtflaeche (ant = Anteil)
+    // Verhaeltnis Bebauungsflaeche / Strassenflaeche zu Gesamtflaeche
+    // (ant = Anteil)
     // share of building development area / road area to total area
-    float fbant, fsant;
+    float areaFractionMain; // old: fbant
+    float areaFractionRoad; // old: fsant
     
     // Abflussvariablen der versiegelten Flaechen
     // runoff variables of sealed surfaces
-    float row1, row2, row3, row4;
+    float runoffSealedSurface1; // old: row1
+    float runoffSealedSurface2; // old: row2
+    float runoffSealedSurface3; // old: row3
+    float runoffSealedSurface4; // old: row4
     
     // Infiltrationsvariablen der versiegelten Flaechen
     // infiltration variables of sealed surfaces
-    float ri1, ri2, ri3, ri4;
+    float infiltrationSealedSurface1; // old: ri1
+    float infiltrationSealedSurface2; // old: ri2
+    float infiltrationSealedSurface3; // old: ri3
+    float infiltrationSealedSurface4; // old: ri4
     
     // Abfluss- / Infiltrationsvariablen der Dachflaechen
     // runoff- / infiltration variables of roof surfaces
-    float rowd, rid;
+    float runoffRoofs; // old: rowd
+    float infiltrationRoofs; // old: rid
     
     // Abfluss- / Infiltrationsvariablen unversiegelter Strassenflaechen
     // runoff- / infiltration variables of unsealed road surfaces
-    float rowuvs, riuvs;
+    float runoffPerviousRoads; // old: rowuvs
+    float infiltrationPerviousRoads; // old: riuvs
     
     // Infiltration unversiegelter Flaechen
-    // infiltratio of unsealed areas
-    float riuv;
+    // infiltration of unsealed areas
+    float infiltrationPerviousSurfaces; // old: riuv
     
-    // float-Zwischenwerte
-    // float interm values
-    float r, ri, row;
-    int k;
+    // intermediate float values
+    float totalRunoff;
+    float infiltration;
+    float surfaceRunoff;
 
     // count protocol entries
-    counters.protcount = 0L;
-    counters.keineFlaechenAngegeben = 0L;
-    counters.nutzungIstNull = 0L;
+    counters.recordsProtocol = 0L;
+    counters.noAreaGiven = 0L;
+    counters.noUsageGiven = 0L;
 
     // first entry into protocol
-    DbaseWriter writer(fileOut, initValues);
+    DbaseWriter writer(outputFile, initValues);
 
-    // get the number of rows in the input data ?
-    counters.totalRecRead = dbReader.getNumberOfRecords();
+    // get the number of rows in the input data
+    counters.recordsRead = dbReader.getNumberOfRecords();
 
-    // loop over all block partial areas (records) of input data
-    for (k = 0; k < counters.totalRecRead; k++) {
+    // loop over all block partial areas (= records/rows of input data)
+    for (int k = 0; k < counters.recordsRead; k++) {
 
-        if (! weiter) {
-            protokollStream << "Berechnungen abgebrochen.\r\n";
+        if (!continueProcessing) {
+            protocolStream << "Berechnungen abgebrochen.\r\n";
             return true;
         }
 
-        ptrDA.wIndex = index;
+        resultRecord.wIndex = index;
 
         // Fill record with data from row k
         dbReader.fillRecord(k, record, debug);
 
-        // NUTZUNG = integer representing the type of area usage for each block partial area
-        if (record.NUTZUNG != 0) {
+        // NUTZUNG = integer representing the type of area usage for each block
+        // partial area
+        if (record.usage != 0) {
 
             // CODE: unique identifier for each block partial area
 
-            // precipitation for entire year 'regenja' and for only summer season 'regenso'
-            regenja = record.REGENJA; /* Jetzt regenja,-so OK */
-            regenso = record.REGENSO;
+            // precipitation for entire year and for summer season only
+            precipitationYear = record.precipitationYear;
+            precipitationSummer = record.precipitationSummer;
 
             // depth to groundwater table 'FLUR'
-            ptrDA.FLW = record.FLUR;
+            resultRecord.depthToWaterTable = record.depthToWaterTable;
 
-            getNUTZ(
-                record.NUTZUNG,
-                record.TYP,      // structure type
-                record.FELD_30,  // field capacity [%] for 0- 30cm below ground level
-                record.FELD_150, // field capacity [%] for 0-150cm below ground level
-                record.CODE
+            getUsage(
+                record.usage,
+                // structure type
+                record.type,
+                // field capacity [%] for 0-30cm below ground level
+                record.fieldCapacity_30,
+                // field capacity [%] for 0-150cm below ground level
+                record.fieldCapacity_150,
+                record.code
             );
 
-            /* cls_6a: an dieser Stelle muss garantiert werden, dass f30 und f150
-               als Parameter von getNUTZ einen definierten Wert erhalten und zwar 0.
-
-               FIXED: alle Werte sind definiert... wenn keine 0, sondern nichts bzw. Leerzeichen
-               angegeben wurden, wird nun eine 0 eingesetzt
-               aber eigentlich war das auch schon so ... ???
-            */
+            // cls_6a: an dieser Stelle muss garantiert werden, dass f30 und
+            // f150 als Parameter von getNUTZ einen definierten Wert erhalten
+            // und zwar 0.
+            // FIXED: alle Werte sind definiert... wenn keine 0, sondern nichts
+            // bzw. Leerzeichen angegeben wurden, wird nun eine 0 eingesetzt
+            // aber eigentlich war das auch schon so ... ???
 
             // Bagrov-calculation for sealed surfaces
-            getKLIMA(record.BEZIRK, record.CODE);
+            getClimaticConditions(record.district, record.code);
 
-            // share of roof area [%] 'PROBAU'
-            vgd = record.PROBAU_fraction;
-          
-            // share of other sealed areas (e.g. Hofflaechen) and calculate total sealed area
-            vgb = record.PROVGU_fraction;
-            ptrDA.VER = INT_ROUND(vgd * 100 + vgb * 100);
-            
-            // share of sealed road area
-            vgs = record.VGSTRASSE_fraction;
-          
-            // degree of canalization for roof / other sealed areas / sealed roads
-            kd = record.KAN_BEB_fraction;
-            kb = record.KAN_VGU_fraction;
-            ks = record.KAN_STR_fraction;
-          
-            // share of each pavement class for surfaces except roads of block area
-            bl1 = record.BELAG1_fraction;
-            bl2 = record.BELAG2_fraction;
-            bl3 = record.BELAG3_fraction;
-            bl4 = record.BELAG4_fraction;
-          
-            // share of each pavement class for roads of block area
-            bls1 = record.STR_BELAG1_fraction;
-            bls2 = record.STR_BELAG2_fraction;
-            bls3 = record.STR_BELAG3_fraction;
-            bls4 = record.STR_BELAG4_fraction;
-          
-            fb = record.FLGES;
-            fs = record.STR_FLGES;
-            
-            // if sum of total building development area and roads area is inconsiderably small
-            // it is assumed, that the area is unknown and 100 % building development area will be given by default
-            if (fb + fs < 0.0001)
-            {
-                //*protokollStream << "\r\nDie Flaeche des Elements " + record.CODE + " ist 0 \r\nund wird automatisch auf 100 gesetzt\r\n";
-                counters.protcount++;
-                counters.keineFlaechenAngegeben++;
-                fb = 100.0F;
+            // percentage of total sealed area
+            resultRecord.mainPercentageSealed = INT_ROUND(
+                // share of roof area [%] 'PROBAU'
+                record.mainFractionBuiltSealed * 100 +
+                // share of other (unbuilt) sealed areas (e.g. Hofflaechen)
+                record.mainFractionUnbuiltSealed * 100
+            );
+
+            // if sum of total building development area and road area is
+            // inconsiderably small it is assumed, that the area is unknown and
+            // 100 % building development area will be given by default
+            if (record.mainArea + record.roadArea < 0.0001) {
+                // *protokollStream << "\r\nDie Flaeche des Elements " +
+                // record.CODE + " ist 0 \r\nund wird automatisch auf 100 gesetzt\r\n";
+                counters.recordsProtocol++;
+                counters.noAreaGiven++;
+                record.mainArea = 100.0F;
             }
 
-            // fbant = Verhaeltnis Bebauungsflaeche zu Gesamtflaeche
-            // fbant = ratio of building development area to total area
-            fbant = fb / (fb + fs);
+            float totalArea = record.mainArea + record.roadArea;
+
+            // Verhaeltnis Bebauungsflaeche zu Gesamtflaeche
+            // ratio of building development area to total area
+            areaFractionMain = record.mainArea / totalArea;
             
-            // fsant = Verhaeltnis Strassenflaeche zu Gesamtflaeche
-            // fsant = ratio of roads area to total area
-            fsant = fs / (fb + fs);
+            // Verhaeltnis Strassenflaeche zu Gesamtflaeche
+            // ratio of roads area to total area
+            areaFractionRoad = record.roadArea / totalArea;
 
             // Runoff for sealed surfaces
-            /* cls_1: Fehler a:
-               rowd = (1.0F - initValues.getInfdach()) * vgd * kb * fbant * RDV;
-               richtige Zeile folgt (kb ----> kd)
-            */
+            // cls_1: Fehler a:
+            //   rowd = (1.0F - initValues.getInfdach()) * vgd * kb * fbant * RDV;
+            //   richtige Zeile folgt (kb ----> kd)
             
-            /*  Legende der Abflussberechnung der 4 Belagsklassen bzw. Dachklasse:
-                rowd / rowx: Abfluss Dachflaeche / Abfluss Belagsflaeche x
-                infdach / infbelx: Infiltrationsparameter Dachfl. / Belagsfl. x
-                belx: Anteil Belagsklasse x
-                blsx: Anteil Strassenbelagsklasse x
-                vgd / vgb: Anteil versiegelte Dachfl. / sonstige versiegelte Flaeche zu Gesamtblockteilflaeche
-                kd / kb / ks: Grad der Kanalisierung Dach / sonst. vers. Fl. / Strassenflaechen
-                fbant / fsant: ?
-                RDV / RxV: Gesamtabfluss versiegelte Flaeche
-            */
-            rowd = (1.0F - initValues.getInfdach()) * vgd * kd * fbant * RDV;
-            row1 = (1.0F - initValues.getInfbel1()) * (bl1 * kb * vgb * fbant + bls1 * ks * vgs * fsant) * R1V;
-            row2 = (1.0F - initValues.getInfbel2()) * (bl2 * kb * vgb * fbant + bls2 * ks * vgs * fsant) * R2V;
-            row3 = (1.0F - initValues.getInfbel3()) * (bl3 * kb * vgb * fbant + bls3 * ks * vgs * fsant) * R3V;
-            row4 = (1.0F - initValues.getInfbel4()) * (bl4 * kb * vgb * fbant + bls4 * ks * vgs * fsant) * R4V;
+            //  Legende der Abflussberechnung der 4 Belagsklassen bzw. Dachklasse:
+            //    rowd / rowx: Abfluss Dachflaeche / Abfluss Belagsflaeche x
+            //    infdach / infbelx: Infiltrationsparameter Dachfl. / Belagsfl. x
+            //    belx: Anteil Belagsklasse x
+            //    blsx: Anteil Strassenbelagsklasse x
+            //    vgd / vgb: Anteil versiegelte Dachfl. / sonstige versiegelte Flaeche zu Gesamtblockteilflaeche
+            //    kd / kb / ks: Grad der Kanalisierung Dach / sonst. vers. Fl. / Strassenflaechen
+            //    fbant / fsant: ?
+            //    RDV / RxV: Gesamtabfluss versiegelte Flaeche
+
+            runoffRoofs =
+                (1.0F - initValues.getInfiltrationFactorRoof()) *
+                record.mainFractionBuiltSealed *
+                record.builtSealedFractionConnected *
+                areaFractionMain *
+                bagrovValueRoof;
+
+            runoffSealedSurface1 =
+                (1.0F - initValues.getInfiltrationFactorSurface1()) *
+                (
+                    record.unbuiltSealedFractionSurface1 *
+                    record.unbuiltSealedFractionConnected *
+                    record.mainFractionUnbuiltSealed *
+                    areaFractionMain +
+                    record.roadSealedFractionSurface1 *
+                    record.roadSealedFractionConnected *
+                    record.roadFractionSealed *
+                    areaFractionRoad
+                ) * bagrovValueSurface1;
+
+            runoffSealedSurface2 =
+                (1.0F - initValues.getInfiltrationFactorSurface2()) *
+                (
+                    record.unbuiltSealedFractionSurface2 *
+                    record.unbuiltSealedFractionConnected *
+                    record.mainFractionUnbuiltSealed *
+                    areaFractionMain +
+                    record.roadSealedFractionSurface2 *
+                    record.roadSealedFractionConnected *
+                    record.roadFractionSealed *
+                    areaFractionRoad
+                ) * bagrovValueSurface2;
+
+            runoffSealedSurface3 =
+                (1.0F - initValues.getInfiltrationFactorSurface3()) *
+                (
+                    record.unbuiltSealedFractionSurface3 *
+                    record.unbuiltSealedFractionConnected *
+                    record.mainFractionUnbuiltSealed *
+                    areaFractionMain +
+                    record.roadSealedFractionSurface3 *
+                    record.roadSealedFractionConnected *
+                    record.roadFractionSealed *
+                    areaFractionRoad
+                ) * bagrovValueSurface3;
+
+            runoffSealedSurface4 =
+                (1.0F - initValues.getInfiltrationFactorSurface4()) *
+                (
+                    record.unbuiltSealedFractionSurface4 *
+                    record.unbuiltSealedFractionConnected *
+                    record.mainFractionUnbuiltSealed *
+                    areaFractionMain +
+                    record.roadSealedFractionSurface4 *
+                    record.roadSealedFractionConnected *
+                    record.roadFractionSealed *
+                    areaFractionRoad
+                ) * bagrovValueSurface4;
 
             // Infiltration for sealed surfaces
-            rid = (1 - kd) * vgd * fbant * RDV;
-            ri1 = (bl1 * vgb * fbant + bls1 * vgs * fsant) * R1V - row1;
-            ri2 = (bl2 * vgb * fbant + bls2 * vgs * fsant) * R2V - row2;
-            ri3 = (bl3 * vgb * fbant + bls3 * vgs * fsant) * R3V - row3;
-            ri4 = (bl4 * vgb * fbant + bls4 * vgs * fsant) * R4V - row4;
+            infiltrationRoofs =
+                (1 - record.builtSealedFractionConnected) *
+                record.mainFractionBuiltSealed *
+                areaFractionMain *
+                bagrovValueRoof;
+
+            infiltrationSealedSurface1 = (
+                record.unbuiltSealedFractionSurface1 *
+                record.mainFractionUnbuiltSealed *
+                areaFractionMain +
+                record.roadSealedFractionSurface1 *
+                record.roadFractionSealed *
+                areaFractionRoad
+            ) * bagrovValueSurface1 - runoffSealedSurface1;
+
+            infiltrationSealedSurface2 = (
+                record.unbuiltSealedFractionSurface2 *
+                record.mainFractionUnbuiltSealed *
+                areaFractionMain +
+                record.roadSealedFractionSurface2 *
+                record.roadFractionSealed *
+                areaFractionRoad
+            ) * bagrovValueSurface2 - runoffSealedSurface2;
+
+            infiltrationSealedSurface3 = (
+                record.unbuiltSealedFractionSurface3 *
+                record.mainFractionUnbuiltSealed *
+                areaFractionMain +
+                record.roadSealedFractionSurface3 *
+                record.roadFractionSealed *
+                areaFractionRoad
+            ) * bagrovValueSurface3 - runoffSealedSurface3;
+
+            infiltrationSealedSurface4 = (
+                record.unbuiltSealedFractionSurface4 *
+                record.mainFractionUnbuiltSealed *
+                areaFractionMain +
+                record.roadSealedFractionSurface4 *
+                record.roadFractionSealed *
+                areaFractionRoad
+            ) * bagrovValueSurface4 - runoffSealedSurface4;
             
             // consider unsealed road surfaces as pavement class 4
-            rowuvs = 0.0F;                   /* old: 0.11F * (1-vgs) * fsant * R4V; */
-            riuvs = (1 - vgs) * fsant * R4V; /* old: 0.89F * (1-vgs) * fsant * R4V; */
+            // old: 0.11F * (1-vgs) * fsant * R4V;
+            runoffPerviousRoads = 0.0F;
+
+            // old: 0.89F * (1-vgs) * fsant * R4V;
+            infiltrationPerviousRoads =
+                (1 - record.roadFractionSealed) *
+                areaFractionRoad *
+                bagrovValueSurface4;
 
             // runoff for unsealed surfaces rowuv = 0
-            riuv = (100.0F - (float) ptrDA.VER) / 100.0F * RUV;
+            infiltrationPerviousSurfaces = (
+                100.0F - (float) resultRecord.mainPercentageSealed
+            ) / 100.0F * unsealedSurfaceRunoff;
 
-            // calculate runoff 'row' for entire block patial area (FLGES+STR_FLGES)
-            row = (row1 + row2 + row3 + row4 + rowd + rowuvs); // mm/a
-            ptrDA.ROW = INT_ROUND(row);
+            // calculate runoff 'row' for entire block patial area (FLGES +
+            // STR_FLGES) (mm/a)
+            surfaceRunoff = (
+                runoffSealedSurface1 +
+                runoffSealedSurface2 +
+                runoffSealedSurface3 +
+                runoffSealedSurface4 +
+                runoffRoofs +
+                runoffPerviousRoads
+            );
+
+            resultRecord.runoff = INT_ROUND(surfaceRunoff);
             
-            // calculate volume 'rowvol' from runoff
-            ROWVOL = row * 3.171F * (fb + fs) / 100000.0F;     // qcm/s
+            // calculate volume 'rowvol' from runoff (qcm/s)
+            surfaceRunoffFlow = surfaceRunoff * 3.171F * (
+                record.mainArea +
+                record.roadArea
+            ) / 100000.0F;
             
             // calculate infiltration rate 'ri' for entire block partial area
-            ri = (ri1 + ri2 + ri3 + ri4 + rid + riuvs + riuv); // mm/a
-            ptrDA.RI = INT_ROUND(ri);
-            
-            // calculate volume 'rivol' from infiltration rate
-            RIVOL = ri * 3.171F * (fb + fs) / 100000.0F;       // qcm/s
-            
-            // calculate total system losses 'r' due to runoff and infiltration for entire block partial area
-            r = row + ri;
-            ptrDA.R = INT_ROUND(r);
-            
-            // calculate volume of system losses 'rvol'due to runoff and infiltration
-            RVOL = ROWVOL + RIVOL;
+            // (mm/a)
+            infiltration = (
+                infiltrationSealedSurface1 +
+                infiltrationSealedSurface2 +
+                infiltrationSealedSurface3 +
+                infiltrationSealedSurface4 +
+                infiltrationRoofs +
+                infiltrationPerviousRoads +
+                infiltrationPerviousSurfaces
+            );
 
-            // calculate total area of building development area as well as roads area
-            float flaeche1 = fb + fs;
+            resultRecord.infiltrationRate = INT_ROUND(infiltration);
+            
+            // calculate volume 'rivol' from infiltration rate (qcm/s)
+            infiltrationFlow = infiltration * 3.171F * (
+                record.mainArea +
+                record.roadArea
+            ) / 100000.0F;
+
+            // calculate total system losses 'r' due to runoff and infiltration
+            // for entire block partial area
+            totalRunoff = surfaceRunoff + infiltration;
+
+            // set totalRunoff in the result record
+            resultRecord.totalRunoff = INT_ROUND(totalRunoff);
+            
+            // calculate volume of system losses 'rvol' due to runoff and
+            // infiltration
+            totalRunoffFlow = surfaceRunoffFlow + infiltrationFlow;
+
 // cls_5b:
-            // calculate evaporation 'verdunst' by subtracting the sum of
-            // runoff and infiltration 'r' from precipitation of entire year
-            // 'regenja' multiplied by correction factor 'niedKorrFaktor'
-            float verdunst = (regenja * initValues.getNiedKorrF()) - r;
+            // calculate evaporation 'verdunst' by subtracting 'r', the sum of
+            // runoff and infiltration from precipitation of entire year,
+            // multiplied by precipitation correction factor
+            float evaporation = (
+                precipitationYear *
+                initValues.getPrecipitationCorrectionFactor()
+            ) - totalRunoff;
 
             // write the calculated variables into respective fields
             writer.addRecord();
-            writer.setRecordField("CODE", record.CODE);
-            writer.setRecordField("R", r);
-            writer.setRecordField("ROW", row);
-            writer.setRecordField("RI", ri);
-            writer.setRecordField("RVOL", RVOL);
-            writer.setRecordField("ROWVOL", ROWVOL);
-            writer.setRecordField("RIVOL", RIVOL);
-            writer.setRecordField("FLAECHE", flaeche1);
+            writer.setRecordField("CODE", record.code);
+            writer.setRecordField("R", totalRunoff);
+            writer.setRecordField("ROW", surfaceRunoff);
+            writer.setRecordField("RI", infiltration);
+            writer.setRecordField("RVOL", totalRunoffFlow);
+            writer.setRecordField("ROWVOL", surfaceRunoffFlow);
+            writer.setRecordField("RIVOL", infiltrationFlow);
+            writer.setRecordField("FLAECHE", totalArea);
 // cls_5c:
-            writer.setRecordField("VERDUNSTUN", verdunst);
+            writer.setRecordField("VERDUNSTUN", evaporation);
 
             index++;
         }
         else {
-            counters.nutzungIstNull++;
-
+            counters.noUsageGiven++;
         }
 
-        /* cls_2: Hier koennten falls gewuenscht die Flaechen dokumentiert werden,
-           deren NUTZUNG=NULL (siehe auch cls_3)
-        */
+        // cls_2: Hier koennten falls gewuenscht die Flaechen dokumentiert
+        // werden, deren NUTZUNG=NULL (siehe auch cls_3)
 
-        emit processSignal((int)((float) k / (float) counters.totalRecRead * 50.0), "Berechne");
+        emit processSignal(
+            (int)((float) k / (float) counters.recordsRead * 50.0),
+            "Berechne"
+        );
     }
 
-    counters.totalRecWrite = index;
+    counters.recordsWritten = index;
 
     emit processSignal(50, "Schreibe Ergebnisse.");
 
     if (!writer.write()) {
-        protokollStream << "Error: "+ writer.getError() +"\r\n";
+        protocolStream << "Error: "+ writer.getError() +"\r\n";
         error = "Fehler beim Schreiben der Ergebnisse.\n" + writer.getError();
         return false;
     }
@@ -357,200 +472,247 @@ bool Calculation::calc(QString fileOut, bool debug)
 // =============================================================================
 // FIXME:
 // =============================================================================
-void Calculation::getNUTZ(int nutz, int typ, int f30, int f150, QString code)
+void Calculation::getUsage(
+        int usageID,
+        int type,
+        int fieldCapacity_30,
+        int fieldCapacity_150,
+        QString code
+)
 {
-    // mittlere pot. kapillare Aufstiegsrate d. Sommerhalbjahres
-    float kr;
+    // Feldlaengen von iTAS und inFK_S, L, T, U
+    // extern int lenTAS, lenS, lenL, lenT, lenU;
 
-    /*
-     * Feldlaengen von iTAS und inFK_S, L, T, U ;
-     * extern int lenTAS, lenS, lenL, lenT, lenU;
-     */
+    // declaration of yield power (ERT) and irrigation (BER) for agricultural or
+    // gardening purposes
+    setUsageYieldIrrigation(usageID, type, code);
 
-    // declaration of yield power (ERT) and irrigation (BER) for agricultural or gardening purposes
-    setUsageYieldIrrigation(nutz, typ, code);
-
-    if (ptrDA.NUT != Usage::waterbody_G)
+    if (resultRecord.usage != Usage::waterbody_G)
     {
-        /* pot. Aufstiegshoehe TAS = FLUR - mittl. Durchwurzelungstiefe TWS */
-        TAS = ptrDA.FLW - config->getTWS(ptrDA.ERT, ptrDA.NUT);
+        // Feldkapazitaet
+        // cls_6b: der Fall der mit NULL belegten FELD_30 und FELD_150 Werte
+        // wird hier im ersten Fall behandelt - ich erwarte dann den Wert 0
+        resultRecord.usableFieldCapacity = PDR::estimateWaterHoldingCapacity(
+                    fieldCapacity_30,
+                    fieldCapacity_150,
+                    resultRecord.usage == Usage::forested_W
+        );
 
-        /* Feldkapazitaet */
-        /* cls_6b: der Fall der mit NULL belegten FELD_30 und FELD_150 Werte
-           wird hier im erten Fall behandelt - ich erwarte dann den Wert 0 */
-        ptrDA.nFK = PDR::estimateWaterHoldingCapacity(f30, f150, ptrDA.NUT == Usage::forested_W);
+        // mittl. Durchwurzelungstiefe TWS
+        float rootingDepth = config->getRootingDepth(
+                    resultRecord.usage,
+                    resultRecord.yieldPower
+        );
 
-        /*
-         * mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres ;
-         * switch (bod) { case S: case U: case L: case T: case LO: case HN: } wird
-         * eingefuegt, wenn die Bodenart in das Zahlenmaterial aufgenommen wird vorlaeufig
-         * wird Sande angenommen ;
-         * Sande
-         */
-        kr = (TAS <= 0.0) ?
+        // pot. Aufstiegshoehe TAS = FLUR - mittl. Durchwurzelungstiefe TWS
+        potentialCapillaryRise = resultRecord.depthToWaterTable - rootingDepth;
+
+        // mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres
+        //
+        // switch (bod) {
+        //   case S: case U: case L: case T: case LO: case HN:
+        // }
+        //
+        // wird eingefuegt, wenn die Bodenart in das Zahlenmaterial aufgenommen
+        // wird. Vorlaeufig wird Sande angenommen.
+
+        float kr = (potentialCapillaryRise <= 0.0) ?
             7.0F :
-            ijkr_S[
-                Helpers::index(TAS, iTAS, lenTAS) +
-                Helpers::index(ptrDA.nFK, inFK_S, lenS) * lenTAS
+            MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER[
+                Helpers::index(
+                    potentialCapillaryRise,
+                    POTENTIAL_RATES_OF_ASCENT,
+                    n_POTENTIAL_RATES_OF_ASCENT
+                ) +
+                Helpers::index(
+                    resultRecord.usableFieldCapacity,
+                    USABLE_FIELD_CAPACITIES,
+                    n_USABLE_FIELD_CAPACITIES
+                ) * n_POTENTIAL_RATES_OF_ASCENT
             ];
 
-        /* mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres */
-        ptrDA.KR = (int) (PDR::estimateDaysOfGrowth(ptrDA.NUT, ptrDA.ERT) * kr);
+        int daysOfGrowth = PDR::estimateDaysOfGrowth(
+                    resultRecord.usage,
+                    resultRecord.yieldPower
+        );
+
+        // mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres
+        resultRecord.meanPotentialCapillaryRiseRate = (int)(daysOfGrowth * kr);
     }
 
-    if (initValues.getBERtoZero() && ptrDA.BER != 0) {
+    if (initValues.getIrrigationToZero() && resultRecord.irrigation != 0) {
         //*protokollStream << "Erzwinge BER=0 fuer Code: " << code << ", Wert war:" << ptrDA.BER << " \r\n";
-        counters.totalBERtoZeroForced++;
-        ptrDA.BER = 0;
+        counters.irrigationForcedToZero++;
+        resultRecord.irrigation = 0;
     }
 }
 
-void Calculation::setUsageYieldIrrigation(int usage, int type, QString code)
+void Calculation::setUsageYieldIrrigation(int usageID, int type, QString code)
 {
     UsageResult result;
 
-    result = config->getUsageResult(usage, type, code);
+    result = config->getUsageResult(usageID, type, code);
 
     if (result.tupleIndex < 0) {
-        protokollStream << result.message;
+        protocolStream << result.message;
         qDebug() << result.message;
-       abort();
+        abort();
     }
 
     if (!result.message.isEmpty()) {
-        protokollStream << result.message;
-        counters.protcount++;
+        protocolStream << result.message;
+        counters.recordsProtocol++;
     }
 
-    ptrDA.setUsageYieldIrrigation(config->getUsageTuple(result.tupleIndex));
+    resultRecord.setUsageYieldIrrigation(config->getUsageTuple(result.tupleIndex));
 }
 
 // =============================================================================
 // FIXME:
 // =============================================================================
-void Calculation::getKLIMA(int bez, QString code)
+void Calculation::getClimaticConditions(int district, QString code)
 {
-    // Effektivitaetsparameter
-    float bag;
+    // Effectivity parameter
+    float effectivityParameter;
 
-    // ep = potential evaporation
-    float ep;
+    // Potential evaporation
+    float potentialEvaporation;
 
-    // prepcipitation at ground level
-    float p;
+    // Prepcipitation at ground level
+    float precipitation;
 
     // ratio of precipitation to potential evaporation
-    float x;
+    float xRatio;
 
     // ratio of real evaporation to potential evaporation
-    float y;
+    float yRatio;
 
     // real evapotranspiration
-    float etr;
+    float realEvapotranspiration;
 
-    /*
-     * spaeter zeizusaetzliche Parameter Hier ;
-     * ptrDA.P1 = p1;
-     * * ptrDA.PS = ps;
-     */
-    ptrDA.P1 = regenja;
-    ptrDA.P1S = regenso;
+    // Later on two additional parameters, (now and?) here:
+    // * ptrDA.P1 = p1;
+    // * ptrDA.PS = ps;
+    resultRecord.precipitationYear = precipitationYear;
+    resultRecord.precipitationSummer = precipitationSummer;
 
-    // parameter for the city districts
-    if (ptrDA.NUT == Usage::waterbody_G)
+    // Parameter for the city districts
+    if (resultRecord.usage == Usage::waterbody_G)
     {
-        ptrDA.ETP = initValueOrReportedDefaultValue(
-            bez, code, initValues.hashEG, 775, "EG"
+        resultRecord.longtimeMeanPotentialEvaporation = initValueOrReportedDefaultValue(
+            district, code, initValues.hashEG, 775, "EG"
         );
     }
     else
     {
-        ptrDA.ETP = initValueOrReportedDefaultValue(
-            bez, code, initValues.hashETP, 660, "ETP"
+        resultRecord.longtimeMeanPotentialEvaporation = initValueOrReportedDefaultValue(
+            district, code, initValues.hashETP, 660, "ETP"
         );
 
-        ptrDA.ETPS = initValueOrReportedDefaultValue(
-            bez, code, initValues.hashETPS, 530, "ETPS"
+        resultRecord.potentialEvaporationSummer = initValueOrReportedDefaultValue(
+            district, code, initValues.hashETPS, 530, "ETPS"
         );
     }
 
-    // declaration potential evaporation ep and precipitation p
-    ep = (float) ptrDA.ETP; /* Korrektur mit 1.1 gestrichen */
-    p = (float) ptrDA.P1 * initValues.getNiedKorrF(); /* ptrDA.KF */
+    // Declaration of potential evaporation and precipitation
+    potentialEvaporation = (float) resultRecord.longtimeMeanPotentialEvaporation; // no more correction with 1.1
+    precipitation = (float) resultRecord.precipitationYear * initValues.getPrecipitationCorrectionFactor();
+      // ptrDA.KF
 
-    /*
-     * Berechnung der Abfluesse RDV und R1V bis R4V fuer versiegelte
-     * Teilflaechen und unterschiedliche Bagrovwerte ND und N1 bis N4
-     */
+    // Berechnung der Abfluesse RDV und R1V bis R4V fuer versiegelte
+    // Teilflaechen und unterschiedliche Bagrovwerte ND und N1 bis N4
 
     // ratio precipitation to potential evaporation
-    x = p / ep;
+    xRatio = precipitation / potentialEvaporation;
 
     Bagrov bagrov;
 
-    /* Berechnung des Abflusses RxV fuer versiegelte Teilflaechen mittels
-       Umrechnung potentieller Verdunstungen ep zu realen über Umrechnungsfaktor y und
-       subtrahiert von Niederschlag p */
+    // Berechnung des Abflusses RxV fuer versiegelte Teilflaechen mittels
+    // Umrechnung potentieller Verdunstungen potentialEvaporation zu realen
+    // ueber Umrechnungsfaktor yRatio und subtrahiert von Niederschlag
+    // precipitation
 
-    RDV = p - bagrov.nbagro(initValues.getBagdach(), x) * ep;
-    R1V = p - bagrov.nbagro(initValues.getBagbel1(), x) * ep;
-    R2V = p - bagrov.nbagro(initValues.getBagbel2(), x) * ep;
-    R3V = p - bagrov.nbagro(initValues.getBagbel3(), x) * ep;
-    R4V = p - bagrov.nbagro(initValues.getBagbel4(), x) * ep;
+    bagrovValueRoof = precipitation - bagrov.nbagro(initValues.getBagrovValueRoof(), xRatio) * potentialEvaporation;
+
+    bagrovValueSurface1 = precipitation - bagrov.nbagro(initValues.getBagrovValueSuface1(), xRatio) * potentialEvaporation;
+    bagrovValueSurface2 = precipitation - bagrov.nbagro(initValues.getBagrovValueSuface2(), xRatio) * potentialEvaporation;
+    bagrovValueSurface3 = precipitation - bagrov.nbagro(initValues.getBagrovValueSuface3(), xRatio) * potentialEvaporation;
+    bagrovValueSurface4 = precipitation - bagrov.nbagro(initValues.getBagrovValueSuface4(), xRatio) * potentialEvaporation;
 
     // Calculate runoff RUV for unsealed partial surfaces
-    if (ptrDA.NUT == Usage::waterbody_G)
+    if (resultRecord.usage == Usage::waterbody_G)
     {
-        RUV = p - ep;
+        unsealedSurfaceRunoff = precipitation - potentialEvaporation;
     }
     else
     {
         // Determine effectiveness parameter bag for unsealed surfaces
-        bag = EffectivenessUnsealed::getNUV(ptrDA); /* Modul Raster abgespeckt */
+        // Modul Raster abgespeckt
+        effectivityParameter = EffectivenessUnsealed::calculate(resultRecord);
 
-        if (ptrDA.P1S > 0 && ptrDA.ETPS > 0) {
-            bag *= getSummerModificationFactor(
-                (float) (ptrDA.P1S + ptrDA.BER + ptrDA.KR) / ptrDA.ETPS
+        if (resultRecord.precipitationSummer > 0 &&
+                resultRecord.potentialEvaporationSummer > 0) {
+            effectivityParameter *= getSummerModificationFactor(
+                (float) (
+                    resultRecord.precipitationSummer +
+                    resultRecord.irrigation +
+                    resultRecord.meanPotentialCapillaryRiseRate
+                ) / resultRecord.potentialEvaporationSummer
             );
         }
 
         // Calculate the x-factor of bagrov relation: x = (P + KR + BER)/ETP
         // Then get the y-factor: y = fbag(n, x)
-        y = bagrov.nbagro(bag, (p + ptrDA.KR + ptrDA.BER) / ep);
+        yRatio = bagrov.nbagro(
+            effectivityParameter,
+            (
+                precipitation +
+                resultRecord.meanPotentialCapillaryRiseRate +
+                resultRecord.irrigation
+            ) / potentialEvaporation
+        );
 
         // Get the real evapotransporation using estimated y-factor
-        etr = y * ep;
+        realEvapotranspiration = yRatio * potentialEvaporation;
 
-        if (TAS < 0) {
-            etr += (ep - y * ep) * (float) exp(ptrDA.FLW / TAS);
+        if (potentialCapillaryRise < 0) {
+            realEvapotranspiration += (
+                potentialEvaporation - yRatio * potentialEvaporation
+            ) * (float) exp(
+                resultRecord.depthToWaterTable / potentialCapillaryRise
+            );
         }
 
-        RUV = p - etr;
+        unsealedSurfaceRunoff = precipitation - realEvapotranspiration;
     }
 }
 
 float Calculation::initValueOrReportedDefaultValue(
-    int bez, QString code, QHash<int, int> &hash, int defaultValue, QString name
+        int district,
+        QString code,
+        QHash<int, int> &hash,
+        int defaultValue,
+        QString name
 )
 {
-    if (hash.contains(bez)) {
-        //take from xml
-        return hash.value(bez);
+    // Take value from hash table (as read from xml file) if available
+    if (hash.contains(district)) {
+        return hash.value(district);
     }
 
-    //default
+    // Default
     float result = hash.contains(0) ? hash.value(0) : defaultValue;
 
-    QString bezString;
-    bezString.setNum(bez);
+    QString districtString;
+    districtString.setNum(district);
 
     QString string;
     string.setNum(result);
 
-    protokollStream << "\r\n" + name + " unbekannt fuer " + code +
-        " von Bezirk " + bezString + "\r\n" + name +
+    protocolStream << "\r\n" + name + " unbekannt fuer " + code +
+        " von Bezirk " + districtString + "\r\n" + name +
         "=" + string + " angenommen\r\n";
-    counters.protcount++;
+    counters.recordsProtocol++;
 
     return result;
 }
@@ -560,26 +722,32 @@ float Calculation::initValueOrReportedDefaultValue(
 // =============================================================================
 float Calculation::getSummerModificationFactor(float wa)
 {
-    const float watab[] =
+    const float VALUES_WA[] =
     {
         0.45F, 0.50F, 0.55F, 0.60F, 0.65F, 0.70F, 0.75F, // 0 ..  6
         0.80F, 0.85F, 0.90F, 0.95F, 1.00F, 1.05F, 1.10F  // 7 .. 13
     };
 
-    const float Ftab[] =
+    const float VALUES_F[] =
     {
         0.65F, 0.75F, 0.82F, 0.90F, 1.00F, 1.06F, 1.15F, // 0 ..  6
         1.22F, 1.30F, 1.38F, 1.47F, 1.55F, 1.63F, 1.70F  // 7 .. 13
     };
 
-    return Helpers::interpolate(wa, watab, Ftab, 14);
+    return Helpers::interpolate(wa, VALUES_WA, VALUES_F, 14);
 }
 
-void Calculation::calculate(QString inputFile, QString configFile, QString outputFile, bool debug)
+void Calculation::runCalculation(
+        QString inputFile,
+        QString configFile,
+        QString outputFile,
+        bool debug
+)
 {
-    // Open the input file and read the raw (text) values into the dbReader object
+    // Open the input file
     DbaseReader dbReader(inputFile);
 
+    // Try to read the raw (text) values into the dbReader object
     if (!dbReader.checkAndRead()) {
         abort();
     }
@@ -592,25 +760,25 @@ void Calculation::calculate(QString inputFile, QString configFile, QString outpu
     }
     else {
         qDebug() << "Using configuration file:" << configFile;
-
-        QString errorMessage = InitValues::updateFromConfig(initValues, configFile);
-        if (!errorMessage.isEmpty()) {
-            qDebug() << "Error in updateFromConfig: " << errorMessage;
+        QString error = InitValues::updateFromConfig(initValues, configFile);
+        if (!error.isEmpty()) {
+            qDebug() << "Error in updateFromConfig: " << error;
             abort();
         }
     }
 
     QFile logHandle(Helpers::defaultLogFileName(outputFile));
+
     Helpers::openFileOrAbort(logHandle, QFile::WriteOnly);
 
     QTextStream logStream(&logHandle);
 
     Calculation calculator(dbReader, initValues, logStream);
 
-    bool success = calculator.calc(outputFile, debug);
+    bool success = calculator.calculate(outputFile, debug);
 
     if (!success) {
-        qDebug() << "Error in calc(): " << calculator.getError();
+        qDebug() << "Error in calculate(): " << calculator.getError();
         abort();
     }
 

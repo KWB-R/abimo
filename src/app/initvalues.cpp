@@ -16,32 +16,32 @@
 
 InitValues::InitValues():
 
-    /* Infiltrationsfaktoren */
-    infdach(0.00F),
-    infbel1(0.10F),
-    infbel2(0.30F),
-    infbel3(0.60F),
-    infbel4(0.90F),
+    // Infiltrationsfaktoren
+    infiltrationFactorRoof(0.00F),
+    infiltrationFactorSurface1(0.10F),
+    infiltrationFactorSurface2(0.30F),
+    infiltrationFactorSurface3(0.60F),
+    infiltrationFactorSurface4(0.90F),
 
-    /* Bagrovwerte */
-    bagdach(0.05F),
-    bagbel1(0.11F),
-    bagbel2(0.11F),
-    bagbel3(0.25F),
-    bagbel4(0.40F),
+    // Bagrovwerte
+    bagrovValueRoof(0.05F),
+    bagrovValueSuface1(0.11F),
+    bagrovValueSuface2(0.11F),
+    bagrovValueSuface3(0.25F),
+    bagrovValueSuface4(0.40F),
 
-    /* Nachkomma der Ergebnisse */
-    decR(3),
-    decROW(3),
-    decRI(3),
-    decRVOL(3),
-    decROWVOL(3),
-    decRIVOL(3),
-    decFLAECHE(0),
-    decVERDUNSTUNG(3),
+    // Nachkomma der Ergebnisse
+    digitsTotalRunoff(3),
+    digitsRunoff(3),
+    digitsInfiltrationRate(3),
+    digitsTotalRunoffFlow(3),
+    digitsRainwaterRunoff(3),
+    digitsTotalSubsurfaceFlow(3),
+    digitsTotalArea(0),
+    digitsEvaporation(3),
 
-    BERtoZero(false),
-    niedKorrF(1.09f),
+    irrigationToZero(false),
+    precipitationCorrectionFactor(1.09f),
     countSets(0)
 {
 }
@@ -84,185 +84,185 @@ QString InitValues::updateFromConfig(InitValues &initValues, QString configFileN
     return errorMessage;
 }
 
-void InitValues::setInfdach(float v) {
-    infdach = v;
+void InitValues::setInfiltrationFactorRoof(float v) {
+    infiltrationFactorRoof = v;
     countSets |= 1;
 }
 
-void InitValues::setInfbel1(float v) {
-    infbel1 = v;
+void InitValues::setInfiltrationFactorSurface1(float v) {
+    infiltrationFactorSurface1 = v;
     countSets |= 2;
 }
 
-void InitValues::setInfbel2(float v) {
-    infbel2 = v;
+void InitValues::setInfiltrationFactorSurface2(float v) {
+    infiltrationFactorSurface2 = v;
     countSets |= 4;
 }
 
-void InitValues::setInfbel3(float v) {
-    infbel3 = v;
+void InitValues::setInfiltrationFactorSurface3(float v) {
+    infiltrationFactorSurface3 = v;
     countSets |= 8;
 }
 
-void InitValues::setInfbel4(float v) {
-    infbel4 = v;
+void InitValues::setInfiltrationFactorSurface4(float v) {
+    infiltrationFactorSurface4 = v;
     countSets |= 16;
 }
 
-void InitValues::setBagdach(float v) {
-    bagdach = v;
+void InitValues::setBagrovValueRoof(float v) {
+    bagrovValueRoof = v;
     countSets |= 32;
 }
 
-void InitValues::setBagbel1(float v) {
-    bagbel1 = v;
+void InitValues::setBagrovValueSuface1(float v) {
+    bagrovValueSuface1 = v;
     countSets |= 64;
 }
 
-void InitValues::setBagbel2(float v) {
-    bagbel2 = v;
+void InitValues::setBagrovValueSuface2(float v) {
+    bagrovValueSuface2 = v;
     countSets |= 128;
 }
 
-void InitValues::setBagbel3(float v) {
-    bagbel3 = v;
+void InitValues::setBagrovValueSuface3(float v) {
+    bagrovValueSuface3 = v;
     countSets |= 256;
 }
 
-void InitValues::setBagbel4(float v) {
-    bagbel4 = v;
+void InitValues::setBagrovSufaceClass4(float v) {
+    bagrovValueSuface4 = v;
     countSets |= 512;
 }
 
-void InitValues::setDecR(int v) {
-    decR = v;
+void InitValues::setDigitsTotalRunoff(int v) {
+    digitsTotalRunoff = v;
     countSets |= 1024;
 }
 
-void InitValues::setDecROW(int v) {
-    decROW = v;
+void InitValues::setDigitsRunoff(int v) {
+    digitsRunoff = v;
     countSets |= 2048;
 }
 
-void InitValues::setDecRI(int v) {
-    decRI = v;
+void InitValues::setDigitsInfiltrationRate(int v) {
+    digitsInfiltrationRate = v;
     countSets |= 4096;
 }
 
-void InitValues::setDecRVOL(int v) {
-    decRVOL = v;
+void InitValues::setDigitsTotalRunoffFlow(int v) {
+    digitsTotalRunoffFlow = v;
     countSets |= 8192;
 }
 
-void InitValues::setDecROWVOL(int v) {
-    decROWVOL = v;
+void InitValues::setDigitsRainwaterRunoff(int v) {
+    digitsRainwaterRunoff = v;
     countSets |= 16384;
 }
 
-void InitValues::setDecRIVOL(int v) {
-    decRIVOL = v;
+void InitValues::setDigitsTotalSubsurfaceFlow(int v) {
+    digitsTotalSubsurfaceFlow = v;
     countSets |= 32768;
 }
 
-void InitValues::setDecFLAECHE(int v) {
-    decFLAECHE = v;
+void InitValues::setDigitsTotalArea(int v) {
+    digitsTotalArea = v;
     countSets |= 65536;
 }
 
-void InitValues::setDecVERDUNSTUNG(int v) {
-    decVERDUNSTUNG = v;
+void InitValues::setDigitsEvaporation(int v) {
+    digitsEvaporation = v;
     countSets |= 131072;
 }
 
-void InitValues::setBERtoZero(bool v) {
-    BERtoZero = v;
+void InitValues::setIrrigationToZero(bool v) {
+    irrigationToZero = v;
     countSets |= 262144;
 }
 
-void InitValues::setNiedKorrF(float v) {
-    niedKorrF = v;
+void InitValues::setPrecipitationCorrectionFactor(float v) {
+    precipitationCorrectionFactor = v;
     countSets |= 524288;
 }
 
-float InitValues::getInfdach()
+float InitValues::getInfiltrationFactorRoof()
 {
-    return infdach;
+    return infiltrationFactorRoof;
 }
 
-float InitValues::getInfbel1() {
-    return infbel1;
+float InitValues::getInfiltrationFactorSurface1() {
+    return infiltrationFactorSurface1;
 }
 
-float InitValues::getInfbel2() {
-    return infbel2;
+float InitValues::getInfiltrationFactorSurface2() {
+    return infiltrationFactorSurface2;
 }
 
-float InitValues::getInfbel3() {
-    return infbel3;
+float InitValues::getInfiltrationFactorSurface3() {
+    return infiltrationFactorSurface3;
 }
 
-float InitValues::getInfbel4() {
-    return infbel4;
+float InitValues::getInfiltrationFactorSurface4() {
+    return infiltrationFactorSurface4;
 }
 
-float InitValues::getBagdach() {
-    return bagdach;
+float InitValues::getBagrovValueRoof() {
+    return bagrovValueRoof;
 }
 
-float InitValues::getBagbel1() {
-    return bagbel1;
+float InitValues::getBagrovValueSuface1() {
+    return bagrovValueSuface1;
 }
 
-float InitValues::getBagbel2() {
-    return bagbel2;
+float InitValues::getBagrovValueSuface2() {
+    return bagrovValueSuface2;
 }
 
-float InitValues::getBagbel3() {
-    return bagbel3;
+float InitValues::getBagrovValueSuface3() {
+    return bagrovValueSuface3;
 }
 
-float InitValues::getBagbel4() {
-    return bagbel4;
+float InitValues::getBagrovValueSuface4() {
+    return bagrovValueSuface4;
 }
 
-int InitValues::getDecR() {
-    return decR;
+int InitValues::getDigitsTotalRunoff() {
+    return digitsTotalRunoff;
 }
 
-int InitValues::getDecROW() {
-    return decROW;
+int InitValues::getDigitsRunoff() {
+    return digitsRunoff;
 }
 
-int InitValues::getDecRI() {
-    return decRI;
+int InitValues::getDigitsInfiltrationRate() {
+    return digitsInfiltrationRate;
 }
 
-int InitValues::getDecRVOL() {
-    return decRVOL;
+int InitValues::getDigitsTotalRunoffFlow() {
+    return digitsTotalRunoffFlow;
 }
 
-int InitValues::getDecROWVOL() {
-    return decROWVOL;
+int InitValues::getDigitsRainwaterRunoff() {
+    return digitsRainwaterRunoff;
 }
 
-int InitValues::getDecRIVOL() {
-    return decRIVOL;
+int InitValues::getDigitsTotalSubsurfaceFlow() {
+    return digitsTotalSubsurfaceFlow;
 }
 
-int InitValues::getDecFLAECHE() {
-    return decFLAECHE;
+int InitValues::getDigitsTotalArea() {
+    return digitsTotalArea;
 }
 
-int InitValues::getDecVERDUNSTUNG() {
-    return decVERDUNSTUNG;
+int InitValues::getDigitsEvaporation() {
+    return digitsEvaporation;
 }
 
-bool InitValues::getBERtoZero() {
-    return BERtoZero;
+bool InitValues::getIrrigationToZero() {
+    return irrigationToZero;
 }
 
-float InitValues::getNiedKorrF() {
-    return niedKorrF;
+float InitValues::getPrecipitationCorrectionFactor() {
+    return precipitationCorrectionFactor;
 }
 
 bool InitValues::allSet() {
@@ -273,39 +273,39 @@ int InitValues::getCountSets() {
     return countSets;
 }
 
-void InitValues::putToHash(QString bezirkeString, int value, int hashtyp) {
+void InitValues::putToHashOfType(QString districts, int value, int hashType) {
 
-    if (hashtyp == 11) {
-        putToHashL(bezirkeString, value, hashETP);
+    if (hashType == 11) {
+        putToReferencedHash(districts, value, hashETP);
     }
-    else if (hashtyp == 12) {
-        putToHashL(bezirkeString, value, hashETPS);
+    else if (hashType == 12) {
+        putToReferencedHash(districts, value, hashETPS);
     }
-    else if (hashtyp == 13) {
-        putToHashL(bezirkeString, value, hashEG);
+    else if (hashType == 13) {
+        putToReferencedHash(districts, value, hashEG);
     }
 }
 
-void InitValues::putToHashL(QString bezirkeString, int value, QHash<int, int> &hash) {
+void InitValues::putToReferencedHash(QString districts, int value, QHash<int, int> &hash) {
 
-    if (bezirkeString.length() == 0) {
-        bezirkeString = "0";
+    if (districts.length() == 0) {
+        districts = "0";
     }
 
-    QStringList bezlist = bezirkeString.split(",", QString::SkipEmptyParts);
+    QStringList districtList = districts.split(",", QString::SkipEmptyParts);
 
-    for (int i = 0; i < bezlist.size(); ++i) {
-        QString bezBereich = bezlist.at(i).trimmed();
-        if (bezBereich.contains("-")) {
-            QStringList bezBereichlist = bezBereich.split("-", QString::SkipEmptyParts);
-            int min =   bezBereichlist.at(0).trimmed().toInt();
-            int max =   bezBereichlist.at(1).trimmed().toInt();
-            for (int bezirk=min; bezirk <= max; ++bezirk) {
-                hash[bezirk] = value;
+    for (int i = 0; i < districtList.size(); ++i) {
+        QString districtRange = districtList.at(i).trimmed();
+        if (districtRange.contains("-")) {
+            QStringList rangeLimits = districtRange.split("-", QString::SkipEmptyParts);
+            int minId = rangeLimits.at(0).trimmed().toInt();
+            int maxId = rangeLimits.at(1).trimmed().toInt();
+            for (int id = minId; id <= maxId; ++id) {
+                hash[id] = value;
             }
         }
         else {
-            hash[bezBereich.toInt()] = value;
+            hash[districtRange.toInt()] = value;
         }
     }
 }

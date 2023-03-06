@@ -20,18 +20,18 @@
 
 DbaseWriter::DbaseWriter(QString &file, InitValues &initValues):
     fileName(file),
-    recNum(0)
+    numberOfRecords(0)
 {
     // Felder mit Namen, Typ, Nachkommastellen
     fields[0].set("CODE", "C", 0);
-    fields[1].set("R", "N", initValues.getDecR());
-    fields[2].set("ROW", "N", initValues.getDecROW());
-    fields[3].set("RI", "N", initValues.getDecRI());
-    fields[4].set("RVOL", "N", initValues.getDecRVOL());
-    fields[5].set("ROWVOL", "N", initValues.getDecROWVOL());
-    fields[6].set("RIVOL", "N", initValues.getDecRIVOL());
-    fields[7].set("FLAECHE", "N", initValues.getDecFLAECHE());
-    fields[8].set("VERDUNSTUN", "N", initValues.getDecVERDUNSTUNG());
+    fields[1].set("R", "N", initValues.getDigitsTotalRunoff());
+    fields[2].set("ROW", "N", initValues.getDigitsRunoff());
+    fields[3].set("RI", "N", initValues.getDigitsInfiltrationRate());
+    fields[4].set("RVOL", "N", initValues.getDigitsTotalRunoffFlow());
+    fields[5].set("ROWVOL", "N", initValues.getDigitsRainwaterRunoff());
+    fields[6].set("RIVOL", "N", initValues.getDigitsTotalSubsurfaceFlow());
+    fields[7].set("FLAECHE", "N", initValues.getDigitsTotalArea());
+    fields[8].set("VERDUNSTUN", "N", initValues.getDigitsEvaporation());
 
     this->date = QDateTime::currentDateTime().date();
 
@@ -58,15 +58,15 @@ bool DbaseWriter::write()
     // Append the actual data
     writeFileData(data);
 
-    QFile o_file(fileName);
+    QFile outputFile(fileName);
 
-    if (!o_file.open(QIODevice::WriteOnly)) {
-        error = "kann Out-Datei: '" + fileName + "' nicht oeffnen\n Grund: " + o_file.error();
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+        error = "kann Out-Datei: '" + fileName + "' nicht oeffnen\n Grund: " + outputFile.error();
         return false;
     }
 
-    o_file.write(data);
-    o_file.close();
+    outputFile.write(data);
+    outputFile.close();
 
     return true;
 }
@@ -82,7 +82,7 @@ int DbaseWriter::writeFileHeader(QByteArray &data)
     index = writeThreeByteDate(data, index, date);
 
     // Write record number at bytes 4 to 7
-    index = writeFourByteInteger(data, index, recNum);
+    index = writeFourByteInteger(data, index, numberOfRecords);
 
     // Write length of header at bytes 8 to 9
     index = writeTwoByteInteger(data, index, lengthOfHeader);
@@ -136,19 +136,19 @@ void DbaseWriter::writeFileData(QByteArray &data)
 {
     QVector<QString> strings;
 
-    for (int rec = 0; rec < recNum; rec++) {
+    for (int i = 0; i < numberOfRecords; i++) {
 
-        strings = record.at(rec);
+        strings = record.at(i);
         data.append(QChar(0x20));
 
-        for (int field = 0; field < countFields; field++) {
+        for (int j = 0; j < countFields; j++) {
 
-            int fieldLength = fields[field].getFieldLength();
+            int fieldLength = fields[j].getFieldLength();
 
-            if (fields[field].getDecimalCount() > 0) {
-                QString str = strings.at(field);
+            if (fields[j].getDecimalCount() > 0) {
+                QString str = strings.at(j);
                 QStringList strlist = str.split(".");
-                int frontLength = fieldLength - 1 - fields[field].getDecimalCount();
+                int frontLength = fieldLength - 1 - fields[j].getDecimalCount();
                 if (strlist.at(0).contains('-')) {
                     data.append(QString("-"));
                     data.append(strlist.at(0).right(strlist.at(0).length() - 1).rightJustified(frontLength-1, QChar(0x30)));
@@ -157,10 +157,15 @@ void DbaseWriter::writeFileData(QByteArray &data)
                     data.append(strlist.at(0).rightJustified(frontLength, QChar(0x30)));
                 }
                 data.append(".");
-                data.append(strlist.at(1).leftJustified(fields[field].getDecimalCount(), QChar(0x30)));
+                data.append(strlist.at(1).leftJustified(
+                    fields[j].getDecimalCount(),
+                    QChar(0x30)
+                ));
             }
             else {
-                data.append(strings.at(field).rightJustified(fieldLength, QChar(0x30)));
+                data.append(strings.at(j).rightJustified(
+                  fieldLength, QChar(0x30)
+                ));
             }
         }
     }
@@ -218,20 +223,21 @@ void DbaseWriter::addRecord()
 {
     QVector<QString> v(countFields);
     record.append(v);
-    recNum ++;
+    numberOfRecords ++;
 }
 
-void DbaseWriter::setRecordField(int num, QString value)
+void DbaseWriter::setRecordField(int i, QString value)
 {
-    ((record.last()))[num] = QString(value);
-    if (value.size() > fields[num].getFieldLength()) {
-        fields[num].setFieldLength(value.size());
+    record.last()[i] = QString(value);
+
+    if (value.size() > fields[i].getFieldLength()) {
+        fields[i].setFieldLength(value.size());
     }
 }
 
-void DbaseWriter::setRecordField(int num, float value)
+void DbaseWriter::setRecordField(int i, float value)
 {    
-    int decimalCount = fields[num].getDecimalCount();
+    int decimalCount = fields[i].getDecimalCount();
 
     // round
     value *= pow(10, decimalCount);
@@ -240,7 +246,7 @@ void DbaseWriter::setRecordField(int num, float value)
 
     QString valueStr;
     valueStr.setNum(value, 'f', decimalCount);
-    setRecordField(num, valueStr);
+    setRecordField(i, valueStr);
 }
 
 void DbaseWriter::setRecordField(QString name, QString value)

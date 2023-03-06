@@ -55,9 +55,9 @@ int DbaseField::getFieldLength()
     return fieldLength;
 }
 
-void DbaseField::setFieldLength(int fl)
+void DbaseField::setFieldLength(int length)
 {
-    fieldLength = fl;
+    fieldLength = length;
 }
 
 int DbaseField::getDecimalCount()

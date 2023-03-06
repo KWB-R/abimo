@@ -9,12 +9,14 @@
 class Config
 {
 public:
+
     Config();
-    float getTWS(int ert, Usage nutz);
-    UsageResult getUsageResult(int usage, int type, QString code);
+    float getRootingDepth(Usage usage, int yield);
+    UsageResult getUsageResult(int usageID, int type, QString code);
     UsageTuple getUsageTuple(int tupleID);
 
 private:
+
     UsageTuple usageTuples[16];
 
     // assignment of usage identifiers to "type -> tuple index" hashes

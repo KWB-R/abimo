@@ -16,48 +16,48 @@ public:
     InitValues();
     ~InitValues();
     static QString updateFromConfig(InitValues &initValues, QString configFileName);
-    void setInfdach(float v);
-    void setInfbel1(float v);
-    void setInfbel2(float v);
-    void setInfbel3(float v);
-    void setInfbel4(float v);
-    void setBagdach(float v);
-    void setBagbel1(float v);
-    void setBagbel2(float v);
-    void setBagbel3(float v);
-    void setBagbel4(float v);
-    void setDecR(int v);
-    void setDecROW(int v);
-    void setDecRI(int v);
-    void setDecRVOL(int v);
-    void setDecROWVOL(int v);
-    void setDecRIVOL(int v);
-    void setDecFLAECHE(int v);
-    void setDecVERDUNSTUNG(int v);
-    void setBERtoZero(bool v);
-    void setNiedKorrF(float v);
-    float getInfdach();
-    float getInfbel1();
-    float getInfbel2();
-    float getInfbel3();
-    float getInfbel4();
-    float getBagdach();
-    float getBagbel1();
-    float getBagbel2();
-    float getBagbel3();
-    float getBagbel4();
-    int getDecR();
-    int getDecROW();
-    int getDecRI();
-    int getDecRVOL();
-    int getDecROWVOL();
-    int getDecRIVOL();
-    int getDecFLAECHE();
-    int getDecVERDUNSTUNG();
-    bool getBERtoZero();
-    float getNiedKorrF();
+    void setInfiltrationFactorRoof(float v);
+    void setInfiltrationFactorSurface1(float v);
+    void setInfiltrationFactorSurface2(float v);
+    void setInfiltrationFactorSurface3(float v);
+    void setInfiltrationFactorSurface4(float v);
+    void setBagrovValueRoof(float v);
+    void setBagrovValueSuface1(float v);
+    void setBagrovValueSuface2(float v);
+    void setBagrovValueSuface3(float v);
+    void setBagrovSufaceClass4(float v);
+    void setDigitsTotalRunoff(int v);
+    void setDigitsRunoff(int v);
+    void setDigitsInfiltrationRate(int v);
+    void setDigitsTotalRunoffFlow(int v);
+    void setDigitsRainwaterRunoff(int v);
+    void setDigitsTotalSubsurfaceFlow(int v);
+    void setDigitsTotalArea(int v);
+    void setDigitsEvaporation(int v);
+    void setIrrigationToZero(bool v);
+    void setPrecipitationCorrectionFactor(float v);
+    float getInfiltrationFactorRoof();
+    float getInfiltrationFactorSurface1();
+    float getInfiltrationFactorSurface2();
+    float getInfiltrationFactorSurface3();
+    float getInfiltrationFactorSurface4();
+    float getBagrovValueRoof();
+    float getBagrovValueSuface1();
+    float getBagrovValueSuface2();
+    float getBagrovValueSuface3();
+    float getBagrovValueSuface4();
+    int getDigitsTotalRunoff();
+    int getDigitsRunoff();
+    int getDigitsInfiltrationRate();
+    int getDigitsTotalRunoffFlow();
+    int getDigitsRainwaterRunoff();
+    int getDigitsTotalSubsurfaceFlow();
+    int getDigitsTotalArea();
+    int getDigitsEvaporation();
+    bool getIrrigationToZero();
+    float getPrecipitationCorrectionFactor();
     bool allSet();
-    void putToHash(QString bezirkeString, int value, int hashtyp);
+    void putToHashOfType(QString districts, int value, int hashType);
     QHash<int, int> hashETP;
     QHash<int, int> hashETPS;
     QHash<int, int> hashEG;
@@ -65,23 +65,38 @@ public:
 
 private:
     // Infiltrationsfaktoren
-    float infdach, infbel1, infbel2, infbel3, infbel4;
+    float infiltrationFactorRoof; // old: infdach
+    float infiltrationFactorSurface1; // old: infbel1
+    float infiltrationFactorSurface2; // old: infbel2
+    float infiltrationFactorSurface3; // old: infbel3
+    float infiltrationFactorSurface4; // old: infbel4
 
     // Bagrovwerte
-    float bagdach, bagbel1, bagbel2, bagbel3, bagbel4;
+    float bagrovValueRoof; // old: bagdach
+    float bagrovValueSuface1; // old: bagbel1
+    float bagrovValueSuface2; // old: bagbel2
+    float bagrovValueSuface3; // old: bagbel3
+    float bagrovValueSuface4; // old: bagbel4
 
     // Nachkomma
-    int decR, decROW, decRI, decRVOL, decROWVOL, decRIVOL, decFLAECHE, decVERDUNSTUNG;
+    int digitsTotalRunoff; // old: decR
+    int digitsRunoff; // old: decROW
+    int digitsInfiltrationRate; // old: decRI
+    int digitsTotalRunoffFlow; // old: decRVOL
+    int digitsRainwaterRunoff; // old: decROWVOL
+    int digitsTotalSubsurfaceFlow; // old: decRIVOL
+    int digitsTotalArea; // old: decFLAECHE
+    int digitsEvaporation; // old: decVERDUNSTUNG
 
     // BER to Zero hack
-    bool BERtoZero;
+    bool irrigationToZero; // old: BERtoZero
 
     // Niederschlags-Korrekturfaktor
-    float niedKorrF;
+    float precipitationCorrectionFactor; // old: niedKorrF
 
     int countSets;
 
-    void putToHashL(QString bezirkeString, int value, QHash<int, int> &hash);
+    void putToReferencedHash(QString districts, int value, QHash<int, int> &hash);
 };
 
 #endif
