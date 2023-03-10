@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "bagrov.h"
+#include "helpers.h"
 
 #define ALMOST_ONE 0.99999F
 #define ALMOST_ZERO 1.0e-07F
@@ -15,10 +16,6 @@
 
 #define ONE_THIRD 1.0F / 3.0F
 #define TWO_THIRDS 2.0F / 3.0F
-
-// Define macros to calculate the minimum or maximum of two values
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /*
 ================================================================================
@@ -42,10 +39,6 @@ AUSGABEPARAMETER:
     ETR::Mittlere reale Verdunstung [mm/a]
 ================================================================================
 */
-
-Bagrov::Bagrov()
-{
-}
 
 const float Bagrov::aa[]= {
     // [0..5] eyn <= UPPER_LIMIT_EYN
@@ -83,10 +76,10 @@ float Bagrov::nbagro(float bage, float x)
     }
 
     // Set input value x to 15.0 at maximum
-    x = MIN(x, 15.0F);
+    x = helpers::min(x, 15.0F);
 
     // Set local variable bag to value of parameter bage (20.0 at maximum)
-    bag = MIN(bage, 20.0);
+    bag = helpers::min(bage, 20.0);
 
     // Calculate expressions that are based on bag
     bag_plus_one = bag + 1.0F;
@@ -116,7 +109,7 @@ float Bagrov::nbagro(float bage, float x)
 
     // NULLTE NAEHERUNGSLOESUNG (1. Naeherungsloesung)
     // Limit y0 to its maximum allowed value
-    y0 = MIN((epa - 1.0F) / (b - c * epa), ALMOST_ONE);
+    y0 = helpers::min((epa - 1.0F) / (b - c * epa), ALMOST_ONE);
 
     // If bag is between a certain range return y0
     if (bag >= 0.7F && bag <= 3.8F) {
@@ -128,16 +121,16 @@ float Bagrov::nbagro(float bage, float x)
         h = 1.0F;
         i = 0;
         while(fabs(h) > 0.001 && i < 15) {
-            y0 = MIN(y0, 0.999F);
+            y0 = helpers::min(y0, 0.999F);
             epa = (float) exp(bag * log(y0));
-            h = MIN(MAX(1.0F - epa, ALMOST_ZERO), ALMOST_ONE);
+            h = helpers::min(helpers::max(1.0F - epa, ALMOST_ZERO), ALMOST_ONE);
             h *= (y0 + epa * y0 / (float) (h - bag * epa / (float) log(h)) - x);
             y0 -= h;
             i++;
         }
 
         // Return y0 (1.0 at maximum)
-        return MIN(y0, 1.0);
+        return helpers::min(y0, 1.0);
     }
 
     // NUMERISCHE INTEGRATION FUER BAG<0.7 (2.Naeherungsloesung)
@@ -149,7 +142,7 @@ float Bagrov::nbagro(float bage, float x)
 
         // If eyn, bag are in a certain range, return y0 (1.0 at maximum)
         if ((eyn > 0.9F) || (eyn >= UPPER_LIMIT_EYN && bag > 4.0F)) {
-            return MIN(y0, 1.0);
+            return helpers::min(y0, 1.0);
         }
 
         // Set start index ia and end index ie, depending on the value of eyn
@@ -192,7 +185,7 @@ float Bagrov::nbagro(float bage, float x)
     }
 
     // Return y0 (1.0 at maximum)
-    return MIN(y0, 1.0);
+    return helpers::min(y0, 1.0);
 }
 
 /*

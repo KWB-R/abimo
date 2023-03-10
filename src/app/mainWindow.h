@@ -18,7 +18,7 @@
 #include <QWidget>
 
 #include "calculation.h"
-#include "initvalues.h"
+#include "initValues.h"
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +42,8 @@ private:
     void warning(QString);
     void reportSuccess(Calculation*, QTextStream&, QString, QString);
     void reportCancelled(QTextStream&);
+    void reportLine(QTextStream&, QString);
+    void reportNumberCasesIfAny(QTextStream&, int, QString);
     QAction *openAct;
     QAction *aboutAct;
     QLabel *textfield;

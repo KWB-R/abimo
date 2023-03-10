@@ -10,7 +10,7 @@
 #include <QXmlAttributes>
 #include <QXmlParseException>
 
-#include "initvalues.h"
+#include "initValues.h"
 
 enum struct ParameterGroup {
     None = 0,

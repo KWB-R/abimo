@@ -19,12 +19,12 @@
 #include <QTextStream>
 #include <QWidget>
 
+#include "abimoReader.h"
 #include "calculation.h"
 #include "constants.h"
-#include "dbaseReader.h"
 #include "helpers.h"
-#include "initvalues.h"
-#include "mainwindow.h"
+#include "initValues.h"
+#include "mainWindow.h"
 
 MainWindow::MainWindow(QApplication* app, QCommandLineParser* arguments):
     QMainWindow(),
@@ -123,8 +123,8 @@ void MainWindow::warning(QString string)
 
 void MainWindow::computeFile()
 {
-    QString inputFileName = Helpers::positionalArgOrNULL(arguments, 0);
-    QString outputFileName = Helpers::positionalArgOrNULL(arguments, 1);
+    QString inputFileName = helpers::positionalArgOrNULL(arguments, 0);
+    QString outputFileName = helpers::positionalArgOrNULL(arguments, 1);
     QString configFileName = arguments->value("config");
     QString protokollFileName;
 
@@ -135,7 +135,7 @@ void MainWindow::computeFile()
         this,
         "Daten einlesen von...",
         folder,
-        Helpers::patternDbfFile()
+        helpers::patternDbfFile()
     );
 
     // Return if no file was selected
@@ -146,8 +146,8 @@ void MainWindow::computeFile()
     // Select configuration file
     configFileName = QString("config.xml");
 
-    // Open a DBASE File
-    DbaseReader dbReader(inputFileName);
+    // Open a DBASE File as expected by Abimo
+    AbimoReader dbReader(inputFileName);
 
     setText("Lese Quelldatei...");
     repaint();
@@ -171,8 +171,8 @@ void MainWindow::computeFile()
     outputFileName = QFileDialog::getSaveFileName(
         this,
         "Ergebnisse schreiben nach...",
-        Helpers::defaultOutputFileName(inputFileName),
-        Helpers::patternDbfFile()
+        helpers::defaultOutputFileName(inputFileName),
+        helpers::patternDbfFile()
     );
 
     // Return if no output file was selected
@@ -185,13 +185,13 @@ void MainWindow::computeFile()
     processEvent(0, "Lese Datei.");
 
     // Protokoll
-    protokollFileName = Helpers::defaultLogFileName(outputFileName);
+    protokollFileName = helpers::defaultLogFileName(outputFileName);
 
     QFile protokollFile(protokollFileName);
 
     if (! protokollFile.open(QFile::WriteOnly)) {
         critical(
-            "Konnte Datei: " + Helpers::singleQuote(protokollFileName) +
+            "Konnte Datei: " + helpers::singleQuote(protokollFileName) +
             " nicht oeffnen.\n" + protokollFile.error()
         );
         return;
@@ -200,7 +200,7 @@ void MainWindow::computeFile()
     QTextStream protokollStream(&protokollFile);
 
     // Start the Calculation
-    protokollStream << "Start der Berechnung " + Helpers::nowString() + "\r\n";
+    protokollStream << "Start der Berechnung " + helpers::nowString() + "\r\n";
 
     // Create calculator object
     calc = new Calculation(dbReader, initValues, protokollStream);
@@ -235,55 +235,70 @@ void MainWindow::computeFile()
 }
 
 void MainWindow::reportSuccess(
-    Calculation* calc,
-    QTextStream &protokollStream,
-    QString outFile,
-    QString protokollFileName
+    Calculation* calculator,
+    QTextStream& protocolStream,
+    QString outputFile,
+    QString protocolFile
 )
 {
-    QString protCount;
-    QString nutzungIstNull;
-    QString keineFlaechenAngegeben;
-    QString readRecCount;
-    QString writeRecCount;
+    Counters counters = calculator->getCounters();
 
-    Counters counters = calc->getCounters();
-
-    protCount.setNum(counters.recordsProtocol);
-    nutzungIstNull.setNum(counters.noUsageGiven);
-    keineFlaechenAngegeben.setNum(counters.noAreaGiven);
-    readRecCount.setNum(counters.recordsRead);
-    writeRecCount.setNum(counters.recordsWritten);
+    int np = counters.getRecordsProtocol();
+    int nr = counters.getRecordsRead();
+    int nw = counters.getRecordsWritten();
 
     setText(
-        "Berechnungen mit " + protCount + " Fehlern beendet.\n" +
-        "Eingelesene Records: " + readRecCount +"\n" +
-        "Geschriebene Records: " + writeRecCount +"\n" +
-        "Ergebnisse in Datei: '" + outFile + "' geschrieben.\n" +
-        "Protokoll in Datei: '" + protokollFileName + "' geschrieben."
+        QString("Berechnungen mit %1 Fehlern beendet.\n").arg(np) +
+        QString("Eingelesene Records: %1\n").arg(nr) +
+        QString("Geschriebene Records: %1\n").arg(nw) +
+        QString("Ergebnisse in Datei: '%1' geschrieben.\n").arg(outputFile) +
+        QString("Protokoll in Datei: '%1' geschrieben.").arg(protocolFile)
     );
 
-    protokollStream << "\r\nBei der Berechnung traten " << protCount <<
-        " Fehler auf.\r\n";
+    reportLine(
+        protocolStream,
+        QString("Bei der Berechnung traten %1 Fehler auf.").arg(np)
+    );
 
-    if (counters.noAreaGiven != 0) {
-        protokollStream << "\r\nBei " + keineFlaechenAngegeben +
-            " Flaechen deren Wert 0 war wurde 100 eingesetzt.\r\n";
+    reportNumberCasesIfAny(
+        protocolStream, counters.getNoAreaGiven(),
+        QString("Flaechen, deren Wert 0 war, wurde 100 eingesetzt")
+    );
+
+    reportNumberCasesIfAny(
+        protocolStream, counters.getNoUsageGiven(),
+        QString("war die Nutzung 0, diese wurden ignoriert")
+    );
+
+    reportNumberCasesIfAny(
+        protocolStream, counters.getIrrigationForcedToZero(),
+        QString("wurde BER==0 erzwungen")
+    );
+
+    reportLine(protocolStream, QString("Eingelesene Records: %1").arg(nr));
+    reportLine(protocolStream, QString("Geschriebene Records: %1").arg(nw));
+
+    reportLine(
+        protocolStream,
+        QString("Ende der Berechnung %1").arg(helpers::nowString())
+    );
+}
+
+void MainWindow::reportLine(QTextStream &protocolStream, QString message)
+{
+    protocolStream << "\r\n" << message << "\r\n";
+}
+
+void MainWindow::reportNumberCasesIfAny(
+    QTextStream &protocolStream, int n, QString whatCase
+)
+{
+    if (n != 0) {
+        reportLine(
+            protocolStream,
+            QString("Bei %1 Records %2.").arg(n).arg(whatCase)
+        );
     }
-
-    if (counters.noUsageGiven != 0) {
-        protokollStream << "\r\nBei " + nutzungIstNull +
-            " Records war die Nutzung 0, diese wurden ignoriert.\r\n";
-    }
-
-    if (counters.irrigationForcedToZero != 0) {
-        protokollStream << "\r\nBei " << counters.irrigationForcedToZero <<
-            " Records wurde BER==0 erzwungen.\r\n";
-    }
-
-    protokollStream << "\r\nEingelesene Records: " + readRecCount + "\r\n";
-    protokollStream << "\r\nGeschriebene Records: " + writeRecCount + "\r\n";
-    protokollStream << "\r\nEnde der Berechnung " + Helpers::nowString() + "\r\n";
 }
 
 void MainWindow::reportCancelled(QTextStream & /*protokollStream*/)

@@ -3,17 +3,14 @@
  * of this repository (https://github.com/KWB-R/abimo).
  ***************************************************************************/
 
-#ifndef BAGROV_H /* Prevent multiple includes */
+#ifndef BAGROV_H
 #define BAGROV_H
 
 class Bagrov
 {
-
 public:
-    Bagrov();
-    float nbagro(float bage, float x);
-    void bagrov(float *bagf, float *x0, float *y0);
-
+    static float nbagro(float bage, float x);
+    static void bagrov(float *bagf, float *x0, float *y0);
 private:
     const static float aa[];
 };

@@ -6,6 +6,8 @@
 #ifndef PDR_H
 #define PDR_H
 
+#include <vector>
+
 #include <QString>
 
 // Descriptions from here:
@@ -39,15 +41,23 @@ struct UsageTuple {
 
 class PDR
 {
+private:
+    const static std::vector<float> POTENTIAL_RATES_OF_ASCENT;
+    const static std::vector<float> USABLE_FIELD_CAPACITIES;
+    const static std::vector<float> MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER;
+
 public:
     PDR();
     void setUsageYieldIrrigation(Usage usage, int yield = 0, int irrigation = 0);
     void setUsageYieldIrrigation(UsageTuple tuple);
+    static int getMeanPotentialCapillaryRiseRate(
+        float potentialCapillaryRise,
+        float usableFieldCapacity,
+        Usage usage,
+        int yieldPower
+    );
     static float estimateWaterHoldingCapacity(int f30, int f150, bool isForest);
     static int estimateDaysOfGrowth(Usage usage, int yield);
-
-    // Elementnummer EB_INDEX neu
-    unsigned wIndex;
 
     // nFK-Wert (ergibt sich aus Bodenart) ID_NFK neu
     // water holding capacity (= nutzbare Feldkapazitaet)
@@ -60,13 +70,10 @@ public:
     Usage usage; // old: NUT
 
     // Langjaehriger MW des Gesamtabflusses [mm/a] 004 N
-    int totalRunoff; // old: R
+//    float totalRunoff; // old: R
 
     // Langjaehriger MW des Regenwasserabflusses [mm/a] 003 N
     int runoff; // old: ROW
-
-    // Langjaehriger MW des unterird. Abflusses [mm/a] 004 N
-    int infiltrationRate; // old: RI
 
     // Versiegelungsgrad bebauter Flaechen [%] ID_VER 002 N
     int mainPercentageSealed; // old: VER

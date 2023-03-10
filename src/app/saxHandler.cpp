@@ -5,7 +5,7 @@
 
 #include <QDebug>
 
-#include "saxhandler.h"
+#include "saxHandler.h"
 
 SaxHandler::SaxHandler(InitValues &initValues):
     state(ParameterGroup::None),
@@ -104,29 +104,29 @@ ParameterGroup SaxHandler::nameToState(QString name)
 void SaxHandler::setInfiltrationFactor(QString key, float value)
 {
     if (key == "Dachflaechen")
-        initValues.setInfiltrationFactorRoof(value);
+        initValues.setInfiltrationFactor(0, value);
     else if (key == "Belaglsklasse1")
-        initValues.setInfiltrationFactorSurface1(value);
+        initValues.setInfiltrationFactor(1, value);
     else if (key == "Belaglsklasse2")
-        initValues.setInfiltrationFactorSurface2(value);
+        initValues.setInfiltrationFactor(2, value);
     else if (key == "Belaglsklasse3")
-        initValues.setInfiltrationFactorSurface3(value);
+        initValues.setInfiltrationFactor(3, value);
     else if (key == "Belaglsklasse4")
-        initValues.setInfiltrationFactorSurface4(value);
+        initValues.setInfiltrationFactor(4, value);
 }
 
 void SaxHandler::setBagrovValue(QString key, float value)
 {
     if (key == "Dachflaechen")
-        initValues.setBagrovValueRoof(value);
+        initValues.setBagrovValue(0, value); // 0 = roof
     else if (key == "Belaglsklasse1")
-        initValues.setBagrovValueSuface1(value);
+        initValues.setBagrovValue(1, value);
     else if (key == "Belaglsklasse2")
-        initValues.setBagrovValueSuface2(value);
+        initValues.setBagrovValue(2, value);
     else if (key == "Belaglsklasse3")
-        initValues.setBagrovValueSuface3(value);
+        initValues.setBagrovValue(3, value);
     else if (key == "Belaglsklasse4")
-        initValues.setBagrovSufaceClass4(value);
+        initValues.setBagrovValue(4, value);
 }
 
 void SaxHandler::setDigits(QString key, int value)
