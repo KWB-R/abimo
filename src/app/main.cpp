@@ -13,14 +13,14 @@
 #include <QTextStream>
 #include <QtDebug>
 
+#include "abimoReader.h"
 #include "main.h"
 #include "bagrov.h"
 #include "calculation.h"
 #include "constants.h"
-#include "dbaseReader.h"
 #include "helpers.h"
-#include "initvalues.h"
-#include "mainwindow.h"
+#include "initValues.h"
+#include "mainWindow.h"
 
 bool parseForBatch(int &argc, char** /*argv*/)
 {
@@ -114,18 +114,18 @@ int main_batch(int argc, char *argv[])
     parser.process(app);
 
     const QStringList positionalArgs = parser.positionalArguments();
-    QString inputFileName = Helpers::positionalArgOrNULL(&parser, 0);
+    QString inputFileName = helpers::positionalArgOrNULL(&parser, 0);
 
-    QString outputFileName = Helpers::positionalArgOrNULL(&parser, 1);
+    QString outputFileName = helpers::positionalArgOrNULL(&parser, 1);
 
     // If no output file name was given, create a default output file name
     if (outputFileName == NULL) {
-        outputFileName = Helpers::defaultOutputFileName(inputFileName);
+        outputFileName = helpers::defaultOutputFileName(inputFileName);
     }
 
     QString configFileName= parser.value("config");
 
-    QString logFileName = Helpers::defaultLogFileName(outputFileName);
+    QString logFileName = helpers::defaultLogFileName(outputFileName);
     bool debug = parser.isSet("debug");
 
     // Handle --write-bagrov-table
@@ -136,7 +136,7 @@ int main_batch(int argc, char *argv[])
 
     debugInputs(inputFileName, outputFileName, configFileName, logFileName, debug);
 
-    DbaseReader dbReader(inputFileName);
+    AbimoReader dbReader(inputFileName);
 
     if (! dbReader.checkAndRead()) {
         qDebug() << dbReader.getFullError();
@@ -161,7 +161,7 @@ int main_batch(int argc, char *argv[])
 
     QTextStream logStream(&logFile);
 
-    logStream << "Start der Berechnung " + Helpers::nowString() + "\r\n";
+    logStream << "Start der Berechnung " + helpers::nowString() + "\r\n";
 
     // Create calculator object
     Calculation calculator(dbReader, initValues, logStream);

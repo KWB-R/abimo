@@ -6,6 +6,8 @@
 #ifndef INITVALUES_H
 #define INITVALUES_H
 
+#include <array>
+
 #include <QHash>
 #include <QString>
 
@@ -14,18 +16,9 @@ class InitValues
 
 public:
     InitValues();
-    ~InitValues();
     static QString updateFromConfig(InitValues &initValues, QString configFileName);
-    void setInfiltrationFactorRoof(float v);
-    void setInfiltrationFactorSurface1(float v);
-    void setInfiltrationFactorSurface2(float v);
-    void setInfiltrationFactorSurface3(float v);
-    void setInfiltrationFactorSurface4(float v);
-    void setBagrovValueRoof(float v);
-    void setBagrovValueSuface1(float v);
-    void setBagrovValueSuface2(float v);
-    void setBagrovValueSuface3(float v);
-    void setBagrovSufaceClass4(float v);
+    void setInfiltrationFactor(int index, float v);
+    void setBagrovValue(int index, float value);
     void setDigitsTotalRunoff(int v);
     void setDigitsRunoff(int v);
     void setDigitsInfiltrationRate(int v);
@@ -36,47 +29,33 @@ public:
     void setDigitsEvaporation(int v);
     void setIrrigationToZero(bool v);
     void setPrecipitationCorrectionFactor(float v);
-    float getInfiltrationFactorRoof();
-    float getInfiltrationFactorSurface1();
-    float getInfiltrationFactorSurface2();
-    float getInfiltrationFactorSurface3();
-    float getInfiltrationFactorSurface4();
-    float getBagrovValueRoof();
-    float getBagrovValueSuface1();
-    float getBagrovValueSuface2();
-    float getBagrovValueSuface3();
-    float getBagrovValueSuface4();
-    int getDigitsTotalRunoff();
-    int getDigitsRunoff();
-    int getDigitsInfiltrationRate();
-    int getDigitsTotalRunoffFlow();
-    int getDigitsRainwaterRunoff();
-    int getDigitsTotalSubsurfaceFlow();
-    int getDigitsTotalArea();
-    int getDigitsEvaporation();
-    bool getIrrigationToZero();
-    float getPrecipitationCorrectionFactor();
-    bool allSet();
+    float getInfiltrationFactor(int index) const;
+    float getBagrovValue(int index) const;
+    int getDigitsTotalRunoff() const;
+    int getDigitsRunoff() const;
+    int getDigitsInfiltrationRate() const;
+    int getDigitsTotalRunoffFlow() const;
+    int getDigitsRainwaterRunoff() const;
+    int getDigitsTotalSubsurfaceFlow() const;
+    int getDigitsTotalArea() const;
+    int getDigitsEvaporation() const;
+    bool getIrrigationToZero() const;
+    float getPrecipitationCorrectionFactor() const;
+    bool allSet() const;
     void putToHashOfType(QString districts, int value, int hashType);
     QHash<int, int> hashETP;
     QHash<int, int> hashETPS;
     QHash<int, int> hashEG;
-    int getCountSets();
+    int getCountSets() const;
 
 private:
     // Infiltrationsfaktoren
-    float infiltrationFactorRoof; // old: infdach
-    float infiltrationFactorSurface1; // old: infbel1
-    float infiltrationFactorSurface2; // old: infbel2
-    float infiltrationFactorSurface3; // old: infbel3
-    float infiltrationFactorSurface4; // old: infbel4
+    // index 0: roof, indices 1-4: surface classes 1-4
+    std::array<float,5> infiltrationFactors; // old: infdach, infbel1 - infbel4
 
     // Bagrovwerte
-    float bagrovValueRoof; // old: bagdach
-    float bagrovValueSuface1; // old: bagbel1
-    float bagrovValueSuface2; // old: bagbel2
-    float bagrovValueSuface3; // old: bagbel3
-    float bagrovValueSuface4; // old: bagbel4
+    // index 0: roof, indices 1-4: surface classes 1-4
+    std::array<float,5> bagrovValues;
 
     // Nachkomma
     int digitsTotalRunoff; // old: decR

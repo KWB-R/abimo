@@ -15,20 +15,20 @@ class DbaseField
 public:
     DbaseField();
     DbaseField(QByteArray);
-    DbaseField(QString name, QString type, int decimalCount);
-    ~DbaseField();
+    DbaseField(QString name, QString type, int numDecimalPlaces);
     QString getName();
     QString getType();
     int getFieldLength();
     int getDecimalCount();
-    void setFieldLength(int length);
-    void set(QString name, QString type, int decimalCount);
+    void setFieldLength(int fieldLength);
+    void set(QString name, QString type, int numDecimalPlaces);
+    static QString formatNumericString(QString s, int length, int decimalPlaces);
 
 private:
-    QString name;
-    QString type;
-    int fieldLength;
-    int decimalCount;
+    QString m_name;
+    QString m_type;
+    int m_fieldLength;
+    int m_numDecimalPlaces;
 };
 
 #endif

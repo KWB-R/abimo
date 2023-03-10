@@ -6,8 +6,10 @@
 #include <QStringList>
 #include <QtTest>
 
+#include "../app/abimoReader.h"
 #include "../app/calculation.h"
 #include "../app/config.h"
+#include "../app/dbaseField.h"
 #include "../app/dbaseReader.h"
 #include "../app/helpers.h"
 
@@ -23,6 +25,7 @@ private slots:
     void test_helpers_containsAll();
     void test_helpers_filesAreIdentical();
     void test_helpers_stringsAreEqual();
+    void test_helpers_formatNumericString();
     void test_requiredFields();
     void test_dbaseReader();
     void test_xmlReader();
@@ -56,7 +59,7 @@ QString TestAbimo::dataFilePath(QString fileName, bool mustExist)
 
     if (mustExist) {
         QString context = "Data directory: " + testDataDir();
-        Helpers::abortIfNoSuchFile(filePath, context);
+        helpers::abortIfNoSuchFile(filePath, context);
     }
 
     return filePath;
@@ -68,8 +71,8 @@ void TestAbimo::test_helpers_containsAll()
     hash["one"] = 1;
     hash["two"] = 2;
 
-    QCOMPARE(Helpers::containsAll(hash, {"one", "two"}), true);
-    QCOMPARE(Helpers::containsAll(hash, {"one", "two", "three"}), false);    
+    QCOMPARE(helpers::containsAll(hash, {"one", "two"}), true);
+    QCOMPARE(helpers::containsAll(hash, {"one", "two", "three"}), false);    
 }
 
 void TestAbimo::test_helpers_filesAreIdentical()
@@ -79,28 +82,52 @@ void TestAbimo::test_helpers_filesAreIdentical()
 
     bool debug = false;
 
-    QCOMPARE(Helpers::filesAreIdentical(file_1, file_1, debug), true);
-    QCOMPARE(Helpers::filesAreIdentical(file_1, file_2, debug), false);
+    QCOMPARE(helpers::filesAreIdentical(file_1, file_1, debug), true);
+    QCOMPARE(helpers::filesAreIdentical(file_1, file_2, debug), false);
 }
 
 void TestAbimo::test_helpers_stringsAreEqual()
 {
-    QString strings_1[] = {"a", "b", "c", "d", "e", "f"};
-    QString strings_2[] = {"a", "b", "d", "e", "f", "g"};
+    QVector<QString> strings_1 = {"a", "b", "c", "d", "e", "f"};
+    QVector<QString> strings_2 = {"a", "b", "d", "e", "f", "g"};
 
-    QCOMPARE(Helpers::stringsAreEqual(strings_1, strings_1, 6), true);
-    QCOMPARE(Helpers::stringsAreEqual(strings_1, strings_2, 6), false);
+    QCOMPARE(helpers::stringsAreEqual(strings_1, strings_1), true);
+    QCOMPARE(helpers::stringsAreEqual(strings_1, strings_2), false);
+}
+
+void TestAbimo::test_helpers_formatNumericString()
+{
+    // Result string
+    QString r;
+
+    r = DbaseField::formatNumericString(QString("123"), 4, 0);
+    QCOMPARE(r, QString("0123"));
+
+    r = DbaseField::formatNumericString(QString("123.456"), 5, 1);
+    QCOMPARE(r, QString("123.4"));
+
+    r = DbaseField::formatNumericString(QString("123.456"), 6, 1);
+    QCOMPARE(r, QString("0123.4"));
+
+    r = DbaseField::formatNumericString(QString("123.456"), 6, 2);
+    QCOMPARE(r, QString("123.45"));
+
+    r = DbaseField::formatNumericString(QString("-123.4"), 5, 0);
+    QCOMPARE(r, QString("-123.")); // is that what we want?
+
+    r = DbaseField::formatNumericString(QString("-123.456"), 7, 1);
+    QCOMPARE(r, QString("-123.4")); // is not of length 7!
 }
 
 void TestAbimo::test_requiredFields()
 {
-    QStringList strings = DbaseReader::requiredFields();
+    QStringList strings = AbimoReader::requiredFields();
     QCOMPARE(strings.length(), 25);
 }
 
 void TestAbimo::test_dbaseReader()
 {
-    DbaseReader reader(dataFilePath("abimo_2019_mitstrassen.dbf"));
+    AbimoReader reader(dataFilePath("abimo_2019_mitstrassen.dbf"));
 
     bool success = reader.checkAndRead();
 
@@ -126,11 +153,11 @@ void TestAbimo::test_xmlReader()
         <item key="Belaglsklasse3" value="0.60" />
         <item key="Belaglsklasse4" value="0.90" />*/
 
-    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorRoof(), 0.0F));
-    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface1(), 0.1F));
-    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface2(), 0.3F));
-    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface3(), 0.6F));
-    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactorSurface4(), 0.9F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactor(0), 0.0F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactor(1), 0.1F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactor(2), 0.3F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactor(3), 0.6F));
+    QVERIFY(qFuzzyCompare(iv.getInfiltrationFactor(4), 0.9F));
 }
 
 void TestAbimo::test_config_getTWS()
@@ -153,15 +180,22 @@ void TestAbimo::test_calc()
     QString outFile_noConfig = dataFilePath("abimo_2019_mitstrassenout_3.2.1_default-config.dbf");
     QString outFile_xmlConfig = dataFilePath("abimo_2019_mitstrassenout_3.2.1_xml-config.dbf");
 
+    // Run the simulation without config file
     Calculation::runCalculation(inputFile, "", outputFile, false);
-
-    //QVERIFY(Helpers::filesAreIdentical(outputFile, referenceFile));
     QVERIFY(dbfHeadersAreIdentical(outputFile, outFile_noConfig));
     QVERIFY(dbfStringsAreIdentical(outputFile, outFile_noConfig));
 
+    // Files are not identical due to differing dates in the header
+    //QVERIFY(helpers::filesAreIdentical(outputFile, referenceFile));
+
     // Run the simulation with initial values from config file
     Calculation::runCalculation(inputFile, configFile, outputFile);
+    QVERIFY(dbfHeadersAreIdentical(outputFile, outFile_xmlConfig));
     QVERIFY(dbfStringsAreIdentical(outputFile, outFile_xmlConfig));
+
+    // file created using the GUI
+    //QString file_tmp = dataFilePath("abimo_2019_mitstrassen_out2.dbf", true);
+    //QVERIFY(dbfStringsAreIdentical(file_tmp, outFile_noConfig));
 }
 
 void TestAbimo::test_bagrov()
@@ -195,12 +229,12 @@ bool TestAbimo::dbfHeadersAreIdentical(QString file_1, QString file_2)
         return false;
     }
 
-    if (reader_1.getLengthOfHeader() != reader_2.getLengthOfHeader()) {
+    if (reader_1.getHeaderLength() != reader_2.getHeaderLength()) {
         qDebug() << "lengthOfHeader differs";
         return false;
     }
 
-    if (reader_1.getLengthOfEachRecord() != reader_2.getLengthOfEachRecord()) {
+    if (reader_1.getRecordLength() != reader_2.getRecordLength()) {
         qDebug() << "lengthOfEachRecord differs";
         return false;
     }
@@ -232,16 +266,17 @@ bool TestAbimo::dbfStringsAreIdentical(QString file_1, QString file_2)
         return false;
     };
 
-    int ncols_1 = reader_1.getCountFields();
-    int ncols_2 = reader_2.getCountFields();
+    int ncols_1 = reader_1.getNumberOfFields();
+    int ncols_2 = reader_2.getNumberOfFields();
 
     if (numbersInFilesDiffer(file_1, file_2, ncols_1, ncols_2, "columns")) {
         return false;
     };
 
-    return Helpers::stringsAreEqual(
-        reader_1.getValues(), reader_2.getValues(), nrows_1 * ncols_1, 5, true
-    );
+    QVector<QString> values_1 = reader_1.getValues();
+    QVector<QString> values_2 = reader_2.getValues();
+
+    return helpers::stringsAreEqual(values_1, values_2, 10, true);
 }
 
 bool TestAbimo::numbersInFilesDiffer(QString file_1, QString file_2, int n_1, int n_2, QString subject)
