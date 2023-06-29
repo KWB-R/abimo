@@ -132,21 +132,21 @@ void SaxHandler::setBagrovValue(QString key, float value)
 void SaxHandler::setDigits(QString key, int value)
 {
     if (key == "R")
-        initValues.setDigitsTotalRunoff(value);
+        initValues.setDigitsTotalRunoff_R(value);
     else if (key == "ROW")
-        initValues.setDigitsRunoff(value);
+        initValues.setDigitsSurfaceRunoff_ROW(value);
     else if (key == "RI")
-        initValues.setDigitsInfiltrationRate(value);
+        initValues.setDigitsInfiltration_RI(value);
     else if (key == "RVOL")
-        initValues.setDigitsTotalRunoffFlow(value);
+        initValues.setDigitsTotalRunoffFlow_RVOL(value);
     else if (key == "ROWVOL")
-        initValues.setDigitsRainwaterRunoff(value);
+        initValues.setDigitsSurfaceRunoffFlow_ROWVOL(value);
     else if (key == "RIVOL")
-        initValues.setDigitsTotalSubsurfaceFlow(value);
+        initValues.setDigitsInfiltrationFlow_RIVOL(value);
     else if (key == "FLAECHE")
-        initValues.setDigitsTotalArea(value);
+        initValues.setDigitsTotalArea_FLAECHE(value);
     else if (key == "VERDUNSTUNG")
-        initValues.setDigitsEvaporation(value);
+        initValues.setDigitsEvaporation_VERDUNSTUN(value);
 }
 
 void SaxHandler::setDiverse(QString key, QString value)

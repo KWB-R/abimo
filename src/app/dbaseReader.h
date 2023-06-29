@@ -6,12 +6,13 @@
 #ifndef DBASEREADER_H
 #define DBASEREADER_H
 
+#include <QBuffer>
 #include <QDate>
 #include <QFile>
 #include <QHash>
 #include <QString>
 
-#include "abimoRecord.h"
+#include "abimoInputRecord.h"
 #include "dbaseFile.h"
 
 class DbaseReader : public DbaseFile
@@ -19,12 +20,15 @@ class DbaseReader : public DbaseFile
 
 public:
     DbaseReader(const QString& file);
+    ~DbaseReader();
 
     // may be overridden by sub-classes
     virtual bool checkAndRead();
 
     // Function to read the dbf file
     bool read();
+
+    const QVector<QString>& getStringValues() const;
 
     // Function to get one record (row)
     QString getRecord(int num, const QString& name);
@@ -47,6 +51,20 @@ protected:
 
     // 32 bit unsigned char to int
     int bytesToInteger(quint8 byte1, quint8 byte2, quint8 byte3, quint8 byte4);
+
+private:
+
+    //int m_recordLength;
+
+    // String values representing the data content of the dbf file
+    QVector<QString> m_stringValues;
+
+    void copyBufferToStringVector(
+        QBuffer& buffer,
+        int numberOfRecords,
+        const QVector<DbaseField>& fieldDefinitions,
+        QVector<QString>& stringVector
+    );
 };
 
 #endif

@@ -139,7 +139,7 @@ int main_batch(int argc, char *argv[])
     AbimoReader dbReader(inputFileName);
 
     if (! dbReader.checkAndRead()) {
-        qDebug() << dbReader.getFullError();
+        qDebug() << dbReader.getError().textLong;
         return 2;
     }
 

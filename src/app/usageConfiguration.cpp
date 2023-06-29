@@ -1,15 +1,15 @@
 #include <QHash>
 
-#include "config.h"
-#include "pdr.h"
+#include "usageConfiguration.h"
+#include "soilAndVegetation.h"
 
-Config::Config()
+UsageConfiguration::UsageConfiguration()
 {    
     initUsageYieldIrrigationTuples();
     initUsageAndTypeToTupleHash();
 }
 
-void Config::initUsageYieldIrrigationTuples()
+void UsageConfiguration::initUsageYieldIrrigationTuples()
 {
     // Define all different value combinations
     // (usage - NUT, yield power - ERT, irrigation - BER)
@@ -39,7 +39,7 @@ void Config::initUsageYieldIrrigationTuples()
 // irrigation)-tuples
 //==============================================================================
 
-void Config::initUsageAndTypeToTupleHash()
+void UsageConfiguration::initUsageAndTypeToTupleHash()
 {
     // assignment of type identifiers to tuple indices
     //
@@ -171,7 +171,7 @@ void Config::initUsageAndTypeToTupleHash()
 //==============================================================================
 //    Bestimmung der Durchwurzelungstiefe TWS
 //==============================================================================
-float Config::getRootingDepth(Usage usage, int yield)
+float UsageConfiguration::getRootingDepth(Usage usage, int yield)
 {
     // Zuordnung Durchwurzelungstiefe in Abhaengigkeit der Nutzung
     switch(usage) {
@@ -193,7 +193,7 @@ float Config::getRootingDepth(Usage usage, int yield)
     }
 }
 
-UsageResult Config::getUsageResult(int usageID, int type, QString code)
+UsageResult UsageConfiguration::getUsageResult(int usageID, int type, QString code)
 {
     if (!usageHash.contains(usageID)) {
         return {
@@ -206,7 +206,7 @@ UsageResult Config::getUsageResult(int usageID, int type, QString code)
     return lookup(usageHash[usageID], type, code);
 }
 
-UsageResult Config::lookup(QHash<int,int>hash, int type, QString code)
+UsageResult UsageConfiguration::lookup(QHash<int,int>hash, int type, QString code)
 {
     if (hash.contains(type)) {
         return {hash[type], ""};
@@ -214,16 +214,22 @@ UsageResult Config::lookup(QHash<int,int>hash, int type, QString code)
 
     if (hash.contains(-1)) {
         int defaultType = hash[-1];
-        QString message = "\r\nNutzungstyp nicht definiert fuer Element " +
-            code + "\r\nTyp=" + QString::number(defaultType) +
-            " angenommen\r\n";
-        return {hash[defaultType], message};
+        return {hash[defaultType], notDefinedMessage(code, defaultType)};
     }
 
     return {hash[-2], ""};
 }
 
-UsageTuple Config::getUsageTuple(int tupleID)
+QString UsageConfiguration::notDefinedMessage(QString& code, int type)
+{
+    QString message = "\r\nNutzungstyp nicht definiert fuer Element " +
+        code + "\r\nTyp=" + QString::number(type) +
+        " angenommen\r\n";
+
+    return message;
+}
+
+UsageTuple UsageConfiguration::getUsageTuple(int tupleID)
 {
     assert(tupleID >= 0);
     return usageTuples[tupleID];
@@ -260,11 +266,11 @@ g1,10|21|22|23|30
 {g1,72,10}
 {g1,73,10}
 {g1,74,10}
-{g1,-72,10} -> logNotDefined(code, 72);
+{g1,-72,10} -> notDefinedMessage(code, 72);
 
 {40,30,6}
 {40,31,5}
-{40,-31,5} -> logNotDefined(code, 31);
+{40,-31,5} -> notDefinedMessage(code, 31);
 
 {50,12,8}
 {50,13,10}
@@ -281,25 +287,25 @@ g1,10|21|22|23|30
 {50,50,9}
 {50,51,8}
 {50,60,8}
-{50,-60,8} -> logNotDefined(code, 60);
+{50,-60,8} -> notDefinedMessage(code, 60);
 
 {60,*,8}
 
 {70,59,2}
-{70,-59,2} -> logNotDefined(code, 59);
+{70,-59,2} -> notDefinedMessage(code, 59);
 
 {80,91,7}
 {80,92,4}
 {80,93,5}
 {80,94,5}
 {80,99,3}
-{80,-99,3} -> logNotDefined(code, 99);
+{80,-99,3} -> notDefinedMessage(code, 99);
 
 {90,98,0}
-{90,-98,0) -> logNotDefined(code, 98);
+{90,-98,0) -> notDefinedMessage(code, 98);
 
 {100,55,15}
-{100,-55,15} -> logNotDefined(code, 55);
+{100,-55,15} -> notDefinedMessage(code, 55);
 
 {101,*,15}
 {102,*,14}

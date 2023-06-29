@@ -29,7 +29,17 @@ namespace helpers
                          int maxDiffs = 5,
                          bool debug = false);
     int stringToInt(QString string, QString context, bool debug = false);
-    float stringToFloat(QString string, QString context, bool debug = false);    
+    float stringToFloat(QString string, QString context, bool debug = false);
+
+    QString formatFloat(float value, int length, int digits);
+    QString rightJustifiedNumber(QString value, int width, QChar fill = QChar('0'));
+
+    float roundFloat(float value, int digits);
+
+    inline float asFloat(int value) {
+        return static_cast<float>(value);
+    };
+
     int index(float xi, const std::vector<float> &x, float epsilon = 0.0001F);
     float interpolate(float xi, const std::vector<float> &x, const std::vector<float> &y);
     QString removeFileExtension(QString);
@@ -46,7 +56,7 @@ namespace helpers
         return (int) round(x);
     }
 
-    inline float vectorSum(const std::vector<float> x) {
+    inline float vectorSum(QVector<float> x) {
         float sum = 0.0;
         for (int i = 0; i < static_cast<int>(x.size()); i++) {
             sum += x[i];

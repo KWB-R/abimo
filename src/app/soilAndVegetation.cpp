@@ -6,14 +6,14 @@
 #include <math.h> // for abs()
 #include <vector>
 
-#include "config.h"
+#include "usageConfiguration.h"
 #include "helpers.h"
-#include "pdr.h"
+#include "soilAndVegetation.h"
 
 // Potential rate of ascent (column labels for matrix
 // meanPotentialCapillaryRiseRateSummer)
 // old: iTAS
-const std::vector<float> PDR::POTENTIAL_RATES_OF_ASCENT = {
+const std::vector<float> SoilAndVegetation::POTENTIAL_RATES_OF_ASCENT = {
     0.1F, 0.2F, 0.3F, 0.4F, 0.5F, 0.6F, 0.7F, 0.8F,
     0.9F, 1.0F, 1.2F, 1.4F, 1.7F, 2.0F, 2.3F
 };
@@ -23,7 +23,7 @@ const std::vector<float> PDR::POTENTIAL_RATES_OF_ASCENT = {
 // Usable field capacity (row labels for matrix
 // meanPotentialCapillaryRiseRateSummer)
 // old: inFK_S
-const std::vector<float> PDR::USABLE_FIELD_CAPACITIES = {
+const std::vector<float> SoilAndVegetation::USABLE_FIELD_CAPACITIES = {
     8.0F, 9.0F, 14.0F, 14.5F, 15.5F, 17.0F, 20.5F
 };
 
@@ -31,7 +31,7 @@ const std::vector<float> PDR::USABLE_FIELD_CAPACITIES = {
 // - Potential rate of ascent (one column each) and
 // - Usable field capacity (one row each)
 // old: ijkr_S
-const std::vector<float> PDR::MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER = {
+const std::vector<float> SoilAndVegetation::MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER = {
     7.0F, 6.0F, 5.0F, 1.5F, 0.5F, 0.2F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
     7.0F, 7.0F, 6.0F, 5.0F, 3.0F, 1.2F, 0.5F, 0.2F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F,
     7.0F, 7.0F, 6.0F, 6.0F, 5.0F, 3.0F, 1.5F, 0.7F, 0.3F, 0.15F, 0.1F, 0.0F, 0.0F, 0.0F, 0.0F,
@@ -41,33 +41,6 @@ const std::vector<float> PDR::MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER = {
     7.0F, 7.0F, 6.0F, 6.0F, 6.0F, 5.0F, 5.0F, 5.0F, 3.0F, 2.0F, 1.0F, 0.5F, 0.15F, 0.0F, 0.0F
 };
 
-PDR::PDR():
-    usableFieldCapacity(0),
-    depthToWaterTable(0),
-    usage(Usage::unknown),
-    runoff(0),
-    mainPercentageSealed(0),
-    yieldPower(0),
-    irrigation(0),
-    precipitationYear(0.0F),
-    longtimeMeanPotentialEvaporation(0),
-    meanPotentialCapillaryRiseRate(0),
-    precipitationSummer(0.0F),
-    potentialEvaporationSummer(0)
-{}
-
-void PDR::setUsageYieldIrrigation(Usage usage, int yield, int irrigation)
-{
-    this->usage = usage;
-    this->yieldPower = yield;
-    this->irrigation = irrigation;
-}
-
-void PDR::setUsageYieldIrrigation(UsageTuple tuple)
-{
-    setUsageYieldIrrigation(tuple.usage, tuple.yield, tuple.irrigation);
-}
-
 // mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres
 //
 // switch (bod) {
@@ -76,7 +49,7 @@ void PDR::setUsageYieldIrrigation(UsageTuple tuple)
 //
 // wird eingefuegt, wenn die Bodenart in das Zahlenmaterial aufgenommen
 // wird. Vorlaeufig wird Sande angenommen.
-int PDR::getMeanPotentialCapillaryRiseRate(
+int SoilAndVegetation::getMeanPotentialCapillaryRiseRate(
         float potentialCapillaryRise,
         float usableFieldCapacity,
         Usage usage,
@@ -95,7 +68,7 @@ int PDR::getMeanPotentialCapillaryRiseRate(
 }
 
 // mittlere Zahl der Wachstumstage
-int PDR::estimateDaysOfGrowth(Usage usage, int yield)
+int SoilAndVegetation::estimateDaysOfGrowth(Usage usage, int yield)
 {
     switch (usage)
     {
@@ -107,7 +80,7 @@ int PDR::estimateDaysOfGrowth(Usage usage, int yield)
     }
 }
 
-float PDR::estimateWaterHoldingCapacity(int f30, int f150, bool isForest)
+float SoilAndVegetation::estimateWaterHoldingCapacity(int f30, int f150, bool isForest)
 {
     if (helpers::min(f30, f150) < 1) {
         return 13.0F;

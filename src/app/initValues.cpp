@@ -23,14 +23,14 @@ InitValues::InitValues():
     bagrovValues({0.05F, 0.11F, 0.11F, 0.25F, 0.40F}),
 
     // Nachkomma der Ergebnisse
-    digitsTotalRunoff(3),
-    digitsRunoff(3),
-    digitsInfiltrationRate(3),
-    digitsTotalRunoffFlow(3),
-    digitsRainwaterRunoff(3),
-    digitsTotalSubsurfaceFlow(3),
-    digitsTotalArea(0),
-    digitsEvaporation(3),
+    digitsTotalRunoff_R(3),
+    digitsSurfaceRunoff_ROW(3),
+    digitsInfiltration_RI(3),
+    digitsTotalRunoffFlow_RVOL(3),
+    digitsSurfaceRunoffFlow_ROWVOL(3),
+    digitsInfiltrationFlow_RIVOL(3),
+    digitsTotalArea_FLAECHE(0),
+    digitsEvaporation_VERDUNSTUN(3),
 
     irrigationToZero(false),
     precipitationCorrectionFactor(1.09f),
@@ -82,43 +82,43 @@ void InitValues::setBagrovValue(int index, float value) {
     countSets |= 1 << (5 + index);
 }
 
-void InitValues::setDigitsTotalRunoff(int v) {
-    digitsTotalRunoff = v;
+void InitValues::setDigitsTotalRunoff_R(int v) {
+    digitsTotalRunoff_R = v;
     countSets |= 1 << 10;
 }
 
-void InitValues::setDigitsRunoff(int v) {
-    digitsRunoff = v;
+void InitValues::setDigitsSurfaceRunoff_ROW(int v) {
+    digitsSurfaceRunoff_ROW = v;
     countSets |= 1 << 11;
 }
 
-void InitValues::setDigitsInfiltrationRate(int v) {
-    digitsInfiltrationRate = v;
+void InitValues::setDigitsInfiltration_RI(int v) {
+    digitsInfiltration_RI = v;
     countSets |= 1 << 12;
 }
 
-void InitValues::setDigitsTotalRunoffFlow(int v) {
-    digitsTotalRunoffFlow = v;
+void InitValues::setDigitsTotalRunoffFlow_RVOL(int v) {
+    digitsTotalRunoffFlow_RVOL = v;
     countSets |= 1 << 13;
 }
 
-void InitValues::setDigitsRainwaterRunoff(int v) {
-    digitsRainwaterRunoff = v;
+void InitValues::setDigitsSurfaceRunoffFlow_ROWVOL(int v) {
+    digitsSurfaceRunoffFlow_ROWVOL = v;
     countSets |= 1 << 14;
 }
 
-void InitValues::setDigitsTotalSubsurfaceFlow(int v) {
-    digitsTotalSubsurfaceFlow = v;
+void InitValues::setDigitsInfiltrationFlow_RIVOL(int v) {
+    digitsInfiltrationFlow_RIVOL = v;
     countSets |= 1 << 15;
 }
 
-void InitValues::setDigitsTotalArea(int v) {
-    digitsTotalArea = v;
+void InitValues::setDigitsTotalArea_FLAECHE(int v) {
+    digitsTotalArea_FLAECHE = v;
     countSets |= 1 << 16;
 }
 
-void InitValues::setDigitsEvaporation(int v) {
-    digitsEvaporation = v;
+void InitValues::setDigitsEvaporation_VERDUNSTUN(int v) {
+    digitsEvaporation_VERDUNSTUN = v;
     countSets |= 1 << 17;
 }
 
@@ -140,36 +140,36 @@ float InitValues::getBagrovValue(int index) const {
     return bagrovValues.at(index);
 }
 
-int InitValues::getDigitsTotalRunoff() const {
-    return digitsTotalRunoff;
+int InitValues::getDigitsTotalRunoff_R() const {
+    return digitsTotalRunoff_R;
 }
 
-int InitValues::getDigitsRunoff() const {
-    return digitsRunoff;
+int InitValues::getDigitsSurfaceRunoff_ROW() const {
+    return digitsSurfaceRunoff_ROW;
 }
 
-int InitValues::getDigitsInfiltrationRate() const {
-    return digitsInfiltrationRate;
+int InitValues::getDigitsInfiltration_RI() const {
+    return digitsInfiltration_RI;
 }
 
-int InitValues::getDigitsTotalRunoffFlow() const {
-    return digitsTotalRunoffFlow;
+int InitValues::getDigitsTotalRunoffFlow_RVOL() const {
+    return digitsTotalRunoffFlow_RVOL;
 }
 
-int InitValues::getDigitsRainwaterRunoff() const {
-    return digitsRainwaterRunoff;
+int InitValues::getDigitsSurfaceRunoffFlow_ROWVOL() const {
+    return digitsSurfaceRunoffFlow_ROWVOL;
 }
 
-int InitValues::getDigitsTotalSubsurfaceFlow() const {
-    return digitsTotalSubsurfaceFlow;
+int InitValues::getDigitsInfiltrationFlow_RIVOL() const {
+    return digitsInfiltrationFlow_RIVOL;
 }
 
-int InitValues::getDigitsTotalArea() const {
-    return digitsTotalArea;
+int InitValues::getDigitsTotalArea_FLAECHE() const {
+    return digitsTotalArea_FLAECHE;
 }
 
-int InitValues::getDigitsEvaporation() const {
-    return digitsEvaporation;
+int InitValues::getDigitsEvaporation_VERDUNSTUN() const {
+    return digitsEvaporation_VERDUNSTUN;
 }
 
 bool InitValues::getIrrigationToZero() const {
