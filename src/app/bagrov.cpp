@@ -18,25 +18,37 @@
 #define TWO_THIRDS 2.0F / 3.0F
 
 /*
- =======================================================================================================================
-    Translated by FOR_C, v2.3.2, on 10/16/94 at 18:28:43 ;
-    FOR_C Options SET: none ;
-    include <stdio.h> ;
-    #include <f_rt.h> ;
-    NBAGRO & BAGROV - Module zur Lesung der BAGROV-Gleichung AUFRUF: CALL NBAGRO(BAG,y,x) CALL BAGROV(BAG,x,y)
-    PROGRAMMTYP: SUBROUTINE, SPRACHE: FORTRAN80 EINGABEPARAMETER: BAG- Bagrov-Parameter mit n=BAG x - x=P/ETP mit
-    P=PMD*niedKorrFaktor [mm/a] ETP::Mittlere potentielle Verdunstung [mm/a] AUSGABEPARAMETER: y - ETR/ETP ETR::
-    Mittlere reale Verdunstung [mm/a]
- =======================================================================================================================
- */
+================================================================================
+Translated by FOR_C, v2.3.2, on 10/16/94 at 18:28:43 ;
+FOR_C Options SET: none ;
+include <stdio.h> ;
+#include <f_rt.h> ;
+NBAGRO & BAGROV - Module zur Lesung der BAGROV-Gleichung
+AUFRUF:
+  CALL NBAGRO(BAG,y,x)
+  CALL BAGROV(BAG,x,y)
+PROGRAMMTYP: SUBROUTINE,
+SPRACHE: FORTRAN80
+EINGABEPARAMETER:
+  BAG- Bagrov-Parameter mit n=BAG
+  x - x=P/ETP mit
+    P=PMD*niedKorrFaktor [mm/a]
+    ETP::Mittlere potentielle Verdunstung [mm/a]
+AUSGABEPARAMETER:
+  y - ETR/ETP mit
+    ETR::Mittlere reale Verdunstung [mm/a]
+================================================================================
+*/
 
 const float Bagrov::aa[]= {
+    // [0..5] eyn <= UPPER_LIMIT_EYN
     0.9946811499F, //  0
     1.213648255F,  //  1
     -1.350801214F, //  2
     11.80883489F,  //  3
     -21.53832235F, //  4
     19.3775197F,   //  5
+    // [6..15]: eyn > UPPER_LIMIT_EYN
     0.862954876F,  //  6
     9.184851852F,  //  7
     -147.2049991F, //  8
@@ -130,19 +142,13 @@ float Bagrov::nbagro(float bage, float x)
 
         // If eyn, bag are in a certain range, return y0 (1.0 at maximum)
         if ((eyn > 0.9F) || (eyn >= UPPER_LIMIT_EYN && bag > 4.0F)) {
-            //*y = MIN(y0, 1.0);
             return helpers::min(y0, 1.0);
         }
 
-        // Set start and end index (?), depending on the value of eyn
-        if (eyn > UPPER_LIMIT_EYN) {
-            ia = 8;
-            ie = 16;
-        }
-        else {
-            ia = 2;
-            ie = 6;
-        }
+        // Set start index ia and end index ie, depending on the value of eyn
+        bool is_high_eyn = (eyn > UPPER_LIMIT_EYN);
+        ia = is_high_eyn ?  8 : 2;
+        ie = is_high_eyn ? 16 : 6;
 
         sum_1 = 0.0F;
         sum_2 = 0.0F;
@@ -153,7 +159,7 @@ float Bagrov::nbagro(float bage, float x)
         {
             h *= eyn;
             w = aa[i - 1] * h;
-            j = i - ia + 1; /* cls J=I-IA+1 */
+            j = i - ia + 1; // cls J = I - IA + 1
             sum_2 += w / (j * (float) bag + 1.0F);
             sum_1 += w;
         }
@@ -183,98 +189,104 @@ float Bagrov::nbagro(float bage, float x)
 }
 
 /*
- =======================================================================================================================
-    FIXME:
- =======================================================================================================================
- */
+================================================================================
+FIXME:
+================================================================================
+*/
 void Bagrov::bagrov(float *bagf, float *x0, float *y0)
 {
-    bool doloop; /* LOGICAL16 */
-    int _do0, i, ii, j;
+    bool doloop; // LOGICAL16
+    int i, ii, j;
 
     qDebug() << "In bagrov()...";
 
-    /* meiko : initialisiere i (einzige Aenderung) */
+    // meiko : initialisiere i (einzige Aenderung)
     i = 0;
 
-    float	delta, du, h, s, s1, sg, si, su, u, x;
+    float delta, du, h, s, sg, si, su, u, x;
 
-    if (*x0 == 0.0) goto L_10;
-    *y0 = 0.99F;
-    goto L_20;
-L_10:
-    *y0 = 0.0F;
-    return;
-L_20:
-    doloop = false;
-
-    /* NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG */
-L_21:
-    j = 1;
-    du = 2.0F **y0;
-    h = 1.0F + 1.0F / (1.0F - (float) exp(*bagf * log(*y0)));
-    si = h * du / 4.0F;
-    sg = 0.0F;
-    su = 0.0F;
-L_1:
-    s = si;
-    j = j * 2;
-    du = du / 2.0F;
-    u = du / 2.0F;
-    sg = sg + su;
-    su = 0.0F;
-
-    for (ii = 1, _do0 = j; ii <= _do0; ii += 2)
-    {
-        su = su + 1.0F / (1.0F - (float) exp(*bagf * log(u)));
-        u = u + du;
+    if (*x0 == 0.0) {
+        *y0 = 0.0F;
+        return;
     }
 
-    si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
-    s1 = 0.001F * s;
-    if (fabs(s - si) > s1) goto L_1;
-    x = si;
-
-    /* ENDE DER NUMERISCHEN INTEGRATION */
-    if (doloop) goto L_42;
-    if (*x0 > x) goto L_30;
-    *y0 = 0.5F;
-    goto L_40;
-L_30:
-    *y0 = 1.0F;
-    return;
-L_40:
-    i = 1;
-
-    /* SCHLEIFE I=1(1)10 ZUR BERECHNUNG VON DELTA */
-L_41:
-    doloop = true;
-    goto L_21;
-L_42:
-    delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
-    *y0 = *y0 + delta;
-    if (*y0 >= 1.0) goto L_50;
-    if (*y0 <= 0.0) goto L_60;
-    goto L_70;
-L_50:
     *y0 = 0.99F;
-    goto L_90;
-L_60:
-    *y0 = 0.01F;
-    goto L_90;
-L_70:
-    if (fabs(delta) < 0.01F) goto L_80;
-    goto L_90;
-L_80:
-    ;
-    return;
-L_90:
-    if (i < 10) goto L_91;
-    goto L_92;
-L_91:
-    i = i + 1;
-    goto L_41;
-L_92:
-    ;
-    return;
-}	/* end of function */
+
+    doloop = false;
+
+    // NUMERISCHE INTEGRATION DER BAGROVBEZIEHUNG
+
+    while (true) {
+
+        j = 1;
+        du = 2.0F * *y0;
+        h = 1.0F + 1.0F / (1.0F - (float) exp(*bagf * log(*y0)));
+        si = h * du / 4.0F;
+        sg = 0.0F;
+        su = 0.0F;
+
+        do {
+            s = si;
+            j *= 2;
+            du /= 2.0F;
+            sg += su;
+
+            su = 0.0F;
+            u = du / 2.0F;
+            for (ii = 1; ii <= j; ii += 2) {
+                su += 1.0F / (1.0F - (float) exp(*bagf * log(u)));
+                u += du;
+            }
+
+            si = (2.0F * sg + 4.0F * su + h) * du / 6.0F;
+        }
+        while (fabs(s - si) > 0.001F * s);
+
+        x = si;
+
+        // ENDE DER NUMERISCHEN INTEGRATION
+        bool skip = false;
+
+        if (doloop) {
+
+            delta = (*x0 - x) * (1.0F - (float) exp(*bagf * (float) log(*y0)));
+            *y0 = *y0 + delta;
+
+            if (*y0 >= 1.0) {
+                *y0 = 0.99F;
+                skip = true;
+            }
+
+            if (!skip && *y0 <= 0.0) {
+                *y0 = 0.01F;
+                skip = true;
+            }
+
+            if (!skip && fabs(delta) < 0.01F) {
+                return;
+            }
+
+            if (i < 10) {
+                i = i + 1;
+                skip = true;
+            }
+
+        } // end of if (doloop)
+
+        if (!skip) {
+
+            if (*x0 > x) {
+                *y0 = 1.0F;
+                return;
+            }
+
+            *y0 = 0.5F;
+            i = 1;
+        }
+
+        // SCHLEIFE I = 1(1)10 ZUR BERECHNUNG VON DELTA
+        doloop = true;
+
+    } // end of while (true)
+
+} // end of function
