@@ -73,7 +73,7 @@ jobs:
       - name: Update binary in latest-dev release
         uses: pyTooling/Actions/releaser@main
         with:
-          tag: latest-dev
+          tag: latest
           rm: true
           token: ${{ secrets.GITHUB_TOKEN }}
           files: abimo_latest_unix64.zip
