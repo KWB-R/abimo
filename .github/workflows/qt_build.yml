@@ -26,7 +26,7 @@ jobs:
         shell: cmd
       - name: Create zip-file
         shell: pwsh
-        run: Compress-Archive -Path ${{ env.ARCHIVE_NAME }}/* -DestinationPath ${{ env.ARCHIVE_NAME }}.zip
+        run: Compress-Archive -Path ${{ env.ARCHIVE_NAME }} -DestinationPath ${{ env.ARCHIVE_NAME }}.zip
       - name: List files
         shell: cmd
         run: dir /s /b
