@@ -21,23 +21,30 @@ jobs:
         run: nmake release
       - name: Deploy
         run: windeployqt.exe release
+      - name: Update Windows-related asset in latest release
+        uses: meeDamian/github-release@2.0
+            with:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              tag: latest-1
+              files: abimo_win64.zip:release/
+              allow_override: true
 #      - name: Upload windows release
 #        uses: actions/upload-artifact@v3
 #        with:
 #          name: windows_abimo_release
 #          path: release
-      - name: Archive Release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: ${{ env.ZIP_NAME}}
-          path: release
-      - name: Update asset in latest release
-        uses: pyTooling/Actions/releaser@main
-        with:
-          tag: latest
-          rm: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ env.ZIP_NAME}}
+#      - name: Archive Release
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          filename: ${{ env.ZIP_NAME}}
+#          path: release
+#      - name: Update asset in latest release
+#        uses: pyTooling/Actions/releaser@main
+#        with:
+#          tag: latest
+#          rm: true
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          files: ${{ env.ZIP_NAME}}
 
   linux_1:
     name: Linux Ubuntu 20.04 (Build only)
