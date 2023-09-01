@@ -1,16 +1,14 @@
 #ifndef EFFECTIVENESSUNSEALED_H
 #define EFFECTIVENESSUNSEALED_H
 
-#include "pdr.h"
+#include "soilAndVegetation.h"
 
 class EffectivenessUnsealed
 {
 public:
     static float getEffectivityParameter(
+        UsageTuple& usageTuple,
         float usableFieldCapacity,
-        bool isForest,
-        int yieldPower,
-        int irrigation,
         float precipitationSummer,
         int potentialEvaporationSummer,
         float meanPotentialCapillaryRiseRate

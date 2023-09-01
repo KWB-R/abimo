@@ -5,41 +5,28 @@
 #include <math.h> // for pow(), round()
 
 #include <QDebug>
+#include <QVector>
 
 #include "dbaseFile.h"
 #include "dbaseWriter.h"
 #include "helpers.h"
-#include "initValues.h"
 
-DbaseWriter::DbaseWriter(const QString& filePath, const InitValues& initValues) :
-    DbaseFile(filePath)
+DbaseWriter::DbaseWriter(QString& filePath) :
+    DbaseFile(filePath),
+    m_record()
 {
-    // Felder mit Namen, Typ, Nachkommastellen
-    fields.push_back(DbaseField("CODE", "C", 0));
-    fields.push_back(DbaseField("R", "N", initValues.getDigitsTotalRunoff()));
-    fields.push_back(DbaseField("ROW", "N", initValues.getDigitsRunoff()));
-    fields.push_back(DbaseField("RI", "N", initValues.getDigitsInfiltrationRate()));
-    fields.push_back(DbaseField("RVOL", "N", initValues.getDigitsTotalRunoffFlow()));
-    fields.push_back(DbaseField("ROWVOL", "N", initValues.getDigitsRainwaterRunoff()));
-    fields.push_back(DbaseField("RIVOL", "N", initValues.getDigitsTotalSubsurfaceFlow()));
-    fields.push_back(DbaseField("FLAECHE", "N", initValues.getDigitsTotalArea()));
-    fields.push_back(DbaseField("VERDUNSTUN", "N", initValues.getDigitsEvaporation()));
-
-    m_headerLength = calculateHeaderLength(fields.size());
-
-    m_date = QDateTime::currentDateTime().date();
-
-    // Fill the hash that assigns field numbers to field names
-    for (int i = 0; i < fields.size(); i++) {
-        m_fieldPositionMap[fields[i].getName()] = i;
-    }
 }
 
 bool DbaseWriter::write()
 {
     QByteArray data;
 
-    data.resize(m_headerLength);
+    m_header.headerLength = calculateHeaderLength(getNumberOfFields());
+
+    // m_fields must be set to calculate the record length!
+    assert(m_fields.size() > 0);
+
+    m_header.recordLength = calculateRecordLength();
 
     // Write the file header containing e.g. names and types of fields
     writeFileHeader(data);
@@ -48,9 +35,12 @@ bool DbaseWriter::write()
     writeFileData(data);
 
     if (!m_file.open(QIODevice::WriteOnly)) {
-        m_error = QString(
+        m_error.textShort = QString(
             "kann Out-Datei: '%1' nicht oeffnen\n Grund: %2"
-        ).arg(m_file.fileName(), m_file.error());
+        ).arg(
+            m_file.fileName(),
+            m_file.error()
+        );
         return false;
     }
 
@@ -62,57 +52,20 @@ bool DbaseWriter::write()
 
 int DbaseWriter::writeFileHeader(QByteArray& data)
 {
+    data.resize(m_header.headerLength);
+
+    // Index into the byte array
     int index = 0;
 
-    // Write start byte
-    index = writeBytes(data, index, 0x03, 1);
+    // Write first part of header (without field specifications)
+    index = writeFileHeaderBase(data, index, m_header);
 
-    // Write date at bytes 1 to 3
-    index = writeThreeByteDate(data, index, m_date);
+    // Write second part of header (field specifications)
+    //const QVector<DbaseField>& fields = getFieldDefinitions();
+    assert(getNumberOfFields() > 0);
 
-    // Write record number at bytes 4 to 7
-    index = writeFourByteInteger(data, index, m_numberOfRecords);
-
-    // Write length of header at bytes 8 to 9
-    index = writeTwoByteInteger(data, index, m_headerLength);
-
-    // Calculate the length of one data row in bytes (1 byte separator?)
-    m_recordLength = 1;
-
-    for (int i = 0; i < fields.size(); i++) {
-        m_recordLength += fields[i].getFieldLength();
-    }
-
-    // Write length of data row at bytes 10, 11
-    index = writeTwoByteInteger(data, index, m_recordLength);
-
-    // Write zeros at bytes 12 .. 28
-    index = writeBytes(data, index, 0x00, 17);
-
-    // wie in der input-Datei ??? byte 29 = language driver code (0x57 = ANSI)
-    index = writeBytes(data, index, 0x57, 1); // byte 29
-    index = writeBytes(data, index, 0x00, 2); // bytes 30, 31
-
-    for (int i = 0; i < fields.size(); i++) {
-
-        // Write name to data, fill up with zeros
-        QString name = fields[i].getName();
-        for (int k = 0; k < 11; k++) {
-            int value = ((k < name.size())? name[k].toLatin1() : 0x00);
-            index = writeBytes(data, index, value, 1);
-        }
-
-        // Write type to data, fill up with zeros
-        QString type = fields[i].getType();
-        index = writeBytes(data, index, type[0].toLatin1(), 1);
-        index = writeBytes(data, index, 0x00, 4);
-
-        // Write field length and decimal count to data (one byte each)
-        index = writeBytes(data, index, fields[i].getFieldLength(), 1);
-        index = writeBytes(data, index, fields[i].getDecimalCount(), 1);
-
-        // Write 14 zeros
-        index = writeBytes(data, index, 0x00, 14);
+    for (int i = 0; i < m_fields.size(); i++) {
+        index = writeFileHeaderField(data, index, m_fields.at(i));
     }
 
     // Indicate the end of the header by writing a special byte
@@ -121,22 +74,98 @@ int DbaseWriter::writeFileHeader(QByteArray& data)
     return index;
 }
 
+int DbaseWriter::writeFileHeaderBase(
+    QByteArray& data, int index, DbaseFileHeader& header
+)
+{
+    // Write start byte at byte 0
+    index = writeBytes(data, index, 0x03, 1);
+
+    // Write date at bytes 1 to 3
+    index = writeThreeByteDate(data, index, header.date);
+
+    // Write record number at bytes 4 to 7
+    index = writeFourByteInteger(data, index, header.numberOfRecords);
+
+    // Write length of header at bytes 8 to 9
+    index = writeTwoByteInteger(data, index, header.headerLength);
+
+    // Write length of data row at bytes 10, 11
+    index = writeTwoByteInteger(data, index, header.recordLength);
+
+    // Write zeros at bytes 12 .. 28
+    index = writeBytes(data, index, 0x00, 17);
+
+    // wie in der input-Datei ??? byte 29 = language driver code (0x57 = ANSI)
+    index = writeBytes(data, index, 0x57, 1); // byte 29
+    index = writeBytes(data, index, 0x00, 2); // bytes 30, 31
+
+    return index;
+}
+
+int DbaseWriter::writeFileHeaderField(
+    QByteArray& data, int index, DbaseField field
+)
+{
+    int value;
+
+    // Write name to data, fill up with zeros
+    QString name = field.getName();
+
+    // Write field name to bytes 0 .. 9
+    for (int i = 0; i < 11; i++) {
+        value = ((i < name.size())? name[i].toLatin1() : 0x00);
+        index = writeBytes(data, index, value, 1);
+    }
+
+    // Write field type to byte 10
+    QString type = field.getType();
+    index = writeBytes(data, index, type[0].toLatin1(), 1);
+
+    // Write 0 to bytes 11 .. 14
+    index = writeBytes(data, index, 0x00, 4);
+
+    // Write field length to byte 15
+    index = writeBytes(data, index, field.getFieldLength(), 1);
+
+    // Write number of decimal places to byte 16
+    index = writeBytes(data, index, field.getDecimalCount(), 1);
+
+    // Write 14-times 0 to bytes 17 .. 31
+    index = writeBytes(data, index, 0x00, 14);
+
+    return index;
+}
+
 void DbaseWriter::writeFileData(QByteArray& data)
 {
+    const QVector<DbaseField>& fields = getFieldDefinitions();
+
     QVector<QString> strings;
+    QString string;
+    QChar fill('0');
 
-    for (int i = 0; i < m_numberOfRecords; i++) {
+    for (int i = 0; i < m_header.numberOfRecords; i++) {
 
-        strings = record.at(i);
+        strings = m_record.at(i);
 
         data.append(QChar(0x20));
 
         for (int j = 0; j < fields.size(); j++) {
-            data.append(DbaseField::formatNumericString(
-                strings.at(j),
-                fields[j].getFieldLength(),
-                fields[j].getDecimalCount()
-            ));
+
+            // Desired length of the string
+            int length = fields[j].getFieldLength();
+
+            string = strings.at(j);
+
+            // Format the string so that it has the desired length
+            string = (fields[j].getDecimalCount() > 0) ?
+                helpers::rightJustifiedNumber(string, length, fill) :
+                string.rightJustified(length, fill, true);
+
+            assert(string.length() == length);
+
+            data.append(string);
         }
     }
 
@@ -191,44 +220,56 @@ int DbaseWriter::writeTwoByteInteger(QByteArray& data, int index, int value)
 
 void DbaseWriter::addRecord()
 {
-    QVector<QString> v(fields.size());
-    record.append(v);
-    m_numberOfRecords ++;
+    QVector<QString> v(getFieldDefinitions().size());
+    m_record.append(v);
+    m_header.numberOfRecords ++;
 }
 
-void DbaseWriter::setRecordField(int i, const QString& value)
+void DbaseWriter::setRecordField(int i, QString& value)
 {
-    record.last()[i] = QString(value);
+    m_record.last()[i] = QString(value);
 
-    if (value.size() > fields[i].getFieldLength()) {
-        fields[i].setFieldLength(value.size());
+    // Update the maximum field length
+    int length = value.size();
+
+    if (length > m_fields[i].getFieldLength()) {
+        m_fields[i].setFieldLength(length);
     }
 }
 
 void DbaseWriter::setRecordField(int i, float value)
-{    
-    int decimalCount = fields[i].getDecimalCount();
+{
+    int digits = m_fields[i].getDecimalCount();
+    QString string;
 
-    // round
-    value *= pow(10, decimalCount);
-    value = round(value);
-    value *= pow(10, -decimalCount);
+    string.setNum(helpers::roundFloat(value, digits), 'f', digits);
 
-    QString valueStr;
-    valueStr.setNum(value, 'f', decimalCount);
-    setRecordField(i, valueStr);
+    setRecordField(i, string);
 }
 
-void DbaseWriter::setRecordField(const QString& name, const QString& value)
+void DbaseWriter::setRecordField(const char* name, QString value)
 {
-    if (m_fieldPositionMap.contains(name)) {
-        setRecordField(m_fieldPositionMap[name], value);
+    int fieldPosition = getFieldPosition(QString(name));
+
+    if (fieldPosition >= 0) {
+        setRecordField(fieldPosition, value);
     }
 }
 
-void DbaseWriter::setRecordField(const QString& name, float value)
+void DbaseWriter::setRecordField(const char* name, int value)
 {
-    if (m_fieldPositionMap.contains(name)) {
-        setRecordField(m_fieldPositionMap[name], value);
+    int fieldPosition = getFieldPosition(name);
+
+    if (fieldPosition >= 0) {
+        setRecordField(fieldPosition, value);
+    }
+}
+
+void DbaseWriter::setRecordField(const char* name, float value)
+{
+    int fieldPosition = getFieldPosition(name);
+
+    if (fieldPosition >= 0) {
+        setRecordField(fieldPosition, value);
     }
 }

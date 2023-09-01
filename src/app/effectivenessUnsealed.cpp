@@ -5,16 +5,16 @@
 #include "helpers.h"
 
 float EffectivenessUnsealed::getEffectivityParameter(
+    UsageTuple& usageTuple,
     float usableFieldCapacity,
-    bool isForest,
-    int yield,
-    int irrigation,
     float precipitationSummer,
     int potentialEvaporationSummer,
     float meanPotentialCapillaryRiseRate
 )
 {
     float result;
+
+    bool isForest = usageTuple.usage == Usage::forested_W;
 
     // hsonne: these expressions are not the opposites of each other!
     bool isSummer = precipitationSummer > 0.0 &&
@@ -27,13 +27,13 @@ float EffectivenessUnsealed::getEffectivityParameter(
 
     result = (isForest) ?
         bag0_forest(g02) :
-        bag0_default(g02, yield, irrigation, isNotSummer);
+        bag0_default(g02, usageTuple.yield, usageTuple.irrigation, isNotSummer);
 
     if (isSummer) {
 
         float height = static_cast<float>(
             precipitationSummer +
-            irrigation +
+            usageTuple.irrigation +
             meanPotentialCapillaryRiseRate
         );
 

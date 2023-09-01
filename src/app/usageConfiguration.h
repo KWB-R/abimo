@@ -1,17 +1,16 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef USAGECONFIGURATION_H
+#define USAGECONFIGURATION_H
 
 #include <QHash>
 #include <QString>
 
-#include "pdr.h" // for MainUsage, UsageResult, UsageTuple
+#include "structs.h" // for MainUsage, UsageResult, UsageTuple
 
-class Config
+class UsageConfiguration
 {
 public:
 
-    Config();
-    float getRootingDepth(Usage usage, int yield);
+    UsageConfiguration();
     UsageResult getUsageResult(int usageID, int type, QString code);
     UsageTuple getUsageTuple(int tupleID);
 
@@ -26,6 +25,7 @@ private:
     void initUsageAndTypeToTupleHash();
 
     UsageResult lookup(QHash<int,int>hash, int type, QString code);
+    QString notDefinedMessage(QString& code, int type);
 };
 
-#endif // CONFIG_H
+#endif // USAGECONFIGURATION_H

@@ -139,7 +139,7 @@ int main_batch(int argc, char *argv[])
     AbimoReader dbReader(inputFileName);
 
     if (! dbReader.checkAndRead()) {
-        qDebug() << dbReader.getFullError();
+        qDebug() << dbReader.getError().textLong;
         return 2;
     }
 
@@ -215,16 +215,16 @@ QTextStream& qStdOut()
     return ts;
 }
 
-#if defined(_MSC_VER)
-    #define MY_LIB_API __declspec(dllexport) // Microsoft-only, if used as signature, breaks build on other platforms.
-#elif defined(__GNUC__)
-    #define MY_LIB_API __attribute__((visibility("default"))) // GCC
-#else
-    #define MY_LIB_API // Most compilers export all the symbols by default. We hope for the best here.
-    #pragma warning Unknown dynamic link import/export semantics.
-#endif
+//#if defined(_MSC_VER)
+//    #define MY_LIB_API __declspec(dllexport) // Microsoft-only, if used as signature, breaks build on other platforms.
+//#elif defined(__GNUC__)
+//    #define MY_LIB_API __attribute__((visibility("default"))) // GCC
+//#else
+//    #define MY_LIB_API // Most compilers export all the symbols by default. We hope for the best here.
+//    #pragma warning Unknown dynamic link import/export semantics.
+//#endif
 
-extern "C" MY_LIB_API int dllmain(
+extern "C" Q_DECL_EXPORT int dllmain(
   const char* infile,
   const char* configfile,
   const char* outfile
@@ -260,12 +260,14 @@ void writeBagrovTable(float bag_min, float bag_max, float bag_step,
     float bag = bag_min;
     QString str;
 
+    BagrovIntermediates bagrovIntermediates;
+
     while(bag <= bag_max) {
 
         float x = x_min;
 
         while (x <= x_max) {
-            y = bagrov.nbagro(bag, x);
+            y = bagrov.yRatio(bag, x, bagrovIntermediates);
             qStdOut() << str.sprintf("%0.1f", bag) << ","
                       << str.sprintf("%0.2f", x) << ","
                       << y << "\n";

@@ -4,18 +4,19 @@
 #include <QString>
 #include <QStringList>
 
-#include "abimoRecord.h"
+#include "abimoInputRecord.h"
 #include "dbaseReader.h"
 
 class AbimoReader : public DbaseReader
 {
 public:
     AbimoReader(const QString& file);
+    ~AbimoReader();
 
     static QStringList requiredFields();
     bool isAbimoFile();
-    void fillRecord(int k, AbimoRecord& record, bool debug = false);
-    bool checkAndRead();
+    void fillRecord(int k, AbimoInputRecord& record, bool debug = false);
+    bool checkAndRead() override;
 
 private:
     // current row index (0 = first row)

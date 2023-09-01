@@ -8,3 +8,4 @@ Makefile
 src/app/app.app
 moc_*
 .DS_STore
+*.TMP

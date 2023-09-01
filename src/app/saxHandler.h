@@ -39,16 +39,15 @@ public:
     bool fatalError(const QXmlParseException &exception);
 
 private:
-    ParameterGroup state;
+    ParameterGroup m_parameterGroup;
     InitValues &initValues;
-    void waterEvaporationEntry(const QXmlAttributes &attribs);
-    void potentialEvaporationEntry(const QXmlAttributes &attribs);
-    static ParameterGroup nameToState(QString name);
-    void setInfiltrationFactor(QString key, float value);
-    void setBagrovValue(QString key, float value);
-    void setDigits(QString key, int value);
-    void setDiverse(QString key, QString value);
+    void potentialEvaporationEntry(
+        const QXmlAttributes &attribs, QString name, int index
+    );
+    static ParameterGroup nameToParameterGroup(QString name);
+    static OutputColumn nameToOutputColumn(QString name);
 
+    int surfaceNameToIndex(QString name);
 };
 
 #endif

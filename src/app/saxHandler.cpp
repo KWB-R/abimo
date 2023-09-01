@@ -8,7 +8,7 @@
 #include "saxHandler.h"
 
 SaxHandler::SaxHandler(InitValues &initValues):
-    state(ParameterGroup::None),
+    m_parameterGroup(ParameterGroup::None),
     initValues(initValues)
 {}
 
@@ -20,8 +20,13 @@ bool SaxHandler::startElement(
 )
 {
     if (qName == "section") {
-        state = nameToState(attribs.value("name"));
-        return (state != ParameterGroup::None && state != ParameterGroup::Invalid);
+
+        m_parameterGroup = nameToParameterGroup(attribs.value("name"));
+
+        return (
+            m_parameterGroup != ParameterGroup::None &&
+            m_parameterGroup != ParameterGroup::Invalid
+        );
     }
 
     if (qName == "item") {
@@ -29,37 +34,60 @@ bool SaxHandler::startElement(
         QString key = attribs.value("key");
         QString value = attribs.value("value");
 
-        switch (state) {
+        switch (m_parameterGroup) {
 
         case ParameterGroup::Infiltrationsfaktoren:
-            setInfiltrationFactor(key, value.toFloat());
+
+            initValues.setInfiltrationFactor(
+                surfaceNameToIndex(key),
+                value.toFloat()
+            );
             break;
 
         case ParameterGroup::Bagrovwerte :
-            setBagrovValue(key, value.toFloat());
+
+            initValues.setBagrovValue(
+                surfaceNameToIndex(key),
+                value.toFloat()
+            );
             break;
 
         case ParameterGroup::Nachkomma :
-            setDigits(key, value.toInt());
+
+            initValues.setResultDigits(
+                nameToOutputColumn(key),
+                value.toInt()
+            );
             break;
 
         case ParameterGroup::Diverse :
-            setDiverse(key, value);
+
+            if (key == "BERtoZero") {
+                initValues.setIrrigationToZero(value == "true");
+            }
+            else if (key == "NIEDKORRF") {
+                initValues.setPrecipitationCorrectionFactor(value.toFloat());
+            }
             break;
 
         case ParameterGroup::GewVerd :
-            waterEvaporationEntry(attribs);
+
+            potentialEvaporationEntry(attribs, "eg", 13);
             break;
 
         case ParameterGroup::PotVerd :
-            potentialEvaporationEntry(attribs);
+
+            potentialEvaporationEntry(attribs, "etp", 11);
+            potentialEvaporationEntry(attribs, "etps", 12);
             break;
 
         case ParameterGroup::None:
+
             qDebug() << "state is still 'None'";
             return false;
 
         case ParameterGroup::Invalid:
+
             qDebug() << "state is 'Invalid'";
             return false;
         }
@@ -68,119 +96,62 @@ bool SaxHandler::startElement(
     return true;
 }
 
-ParameterGroup SaxHandler::nameToState(QString name)
+ParameterGroup SaxHandler::nameToParameterGroup(QString name)
 {
-    if (name == "Infiltrationsfaktoren") {
-        return ParameterGroup::Infiltrationsfaktoren;
-    }
+    QHash <QString, ParameterGroup> hash({
+        {"Infiltrationsfaktoren", ParameterGroup::Infiltrationsfaktoren},
+        {"Bagrovwerte", ParameterGroup::Bagrovwerte},
+        {"ErgebnisNachkommaStellen", ParameterGroup::Nachkomma},
+        {"Diverse", ParameterGroup::Diverse},
+        {"Gewaesserverdunstung" , ParameterGroup::GewVerd},
+        {"PotentielleVerdunstung", ParameterGroup::PotVerd}
+    });
 
-    if (name == "Bagrovwerte") {
-        return ParameterGroup::Bagrovwerte;
-    }
-
-    if (name == "ErgebnisNachkommaStellen") {
-        return ParameterGroup::Nachkomma;
-    }
-
-    if (name == "Diverse") {
-        return ParameterGroup::Diverse;
-    }
-
-    if (name == "Gewaesserverdunstung") {
-        return ParameterGroup::GewVerd;
-    }
-
-    if (name == "PotentielleVerdunstung") {
-        return ParameterGroup::PotVerd;
-    }
-
-    if (name.isEmpty()) {
-        return ParameterGroup::None;
-    }
-
-    return ParameterGroup::Invalid;
+    return name.isEmpty() ?
+        ParameterGroup::None :
+        hash.contains(name) ? hash[name] : ParameterGroup::Invalid;
 }
 
-void SaxHandler::setInfiltrationFactor(QString key, float value)
+OutputColumn SaxHandler::nameToOutputColumn(QString name)
 {
-    if (key == "Dachflaechen")
-        initValues.setInfiltrationFactor(0, value);
-    else if (key == "Belaglsklasse1")
-        initValues.setInfiltrationFactor(1, value);
-    else if (key == "Belaglsklasse2")
-        initValues.setInfiltrationFactor(2, value);
-    else if (key == "Belaglsklasse3")
-        initValues.setInfiltrationFactor(3, value);
-    else if (key == "Belaglsklasse4")
-        initValues.setInfiltrationFactor(4, value);
+    QHash <QString, OutputColumn> hash({
+        {"R", OutputColumn::TotalRunoff_R},
+        {"ROW", OutputColumn::SurfaceRunoff_ROW},
+        {"RI", OutputColumn::Infiltration_RI},
+        {"RVOL", OutputColumn::TotalRunoffFlow_RVOL},
+        {"ROWVOL", OutputColumn::SurfaceRunoffFlow_ROWVOL},
+        {"RIVOL", OutputColumn::InfiltrationFlow_RIVOL},
+        {"FLAECHE", OutputColumn::TotalArea_FLAECHE},
+        {"VERDUNSTUNG", OutputColumn::Evaporation_VERDUNSTUN}
+    });
+
+    return name.isEmpty() ?
+        OutputColumn::None :
+        hash.contains(name) ? hash[name] : OutputColumn::Invalid;
 }
 
-void SaxHandler::setBagrovValue(QString key, float value)
+int SaxHandler::surfaceNameToIndex(QString name)
 {
-    if (key == "Dachflaechen")
-        initValues.setBagrovValue(0, value); // 0 = roof
-    else if (key == "Belaglsklasse1")
-        initValues.setBagrovValue(1, value);
-    else if (key == "Belaglsklasse2")
-        initValues.setBagrovValue(2, value);
-    else if (key == "Belaglsklasse3")
-        initValues.setBagrovValue(3, value);
-    else if (key == "Belaglsklasse4")
-        initValues.setBagrovValue(4, value);
+    QHash <QString, int> hash({
+        {"Dachflaechen", 0},
+        {"Belaglsklasse1", 1},
+        {"Belaglsklasse2", 2},
+        {"Belaglsklasse3", 3},
+        {"Belaglsklasse4", 4},
+    });
+
+    return hash[name];
 }
 
-void SaxHandler::setDigits(QString key, int value)
+void SaxHandler::potentialEvaporationEntry(
+    const QXmlAttributes &attribs, QString name, int index
+)
 {
-    if (key == "R")
-        initValues.setDigitsTotalRunoff(value);
-    else if (key == "ROW")
-        initValues.setDigitsRunoff(value);
-    else if (key == "RI")
-        initValues.setDigitsInfiltrationRate(value);
-    else if (key == "RVOL")
-        initValues.setDigitsTotalRunoffFlow(value);
-    else if (key == "ROWVOL")
-        initValues.setDigitsRainwaterRunoff(value);
-    else if (key == "RIVOL")
-        initValues.setDigitsTotalSubsurfaceFlow(value);
-    else if (key == "FLAECHE")
-        initValues.setDigitsTotalArea(value);
-    else if (key == "VERDUNSTUNG")
-        initValues.setDigitsEvaporation(value);
-}
+    QString element = attribs.value(name);
 
-void SaxHandler::setDiverse(QString key, QString value)
-{
-    if (key == "BERtoZero")
-        initValues.setIrrigationToZero(value == "true");
-    else if (key == "NIEDKORRF")
-        initValues.setPrecipitationCorrectionFactor(value.toFloat());
-}
-
-void SaxHandler::waterEvaporationEntry(const QXmlAttributes &attribs)
-{
-    QString bezirke = attribs.value("bezirke");
-    QString eg = attribs.value("eg");
-
-    initValues.putToHashOfType(bezirke, eg.toInt(), 13);
-}
-
-void SaxHandler::potentialEvaporationEntry(const QXmlAttributes &attribs)
-{
-    QString etp = attribs.value("etp");
-    QString etps = attribs.value("etps");
-
-    if (etp.length() > 0 || etps.length() > 0) {
-
+    if (element.length() > 0) {
         QString bezirke = attribs.value("bezirke");
-
-        if (etp.length() > 0) {
-            initValues.putToHashOfType(bezirke, etp.toInt(), 11);
-        }
-
-        if (etps.length() > 0) {
-            initValues.putToHashOfType(bezirke, etps.toInt(), 12);
-        }
+        initValues.putToHashOfType(bezirke, element.toInt(), index);
     }
 }
 
