@@ -46,7 +46,7 @@ jobs:
   mac:
     runs-on: macos-latest
     env:
-      ZIP_NAME: abimo_latest_macos.tar.gz
+      RELEASE_NAME: abimo_latest_macos
     steps:
       - name: Fake the result of a build process
         run: |
@@ -54,11 +54,12 @@ jobs:
           echo "build result" > release/macos-release.txt
           ls -l
       - name: Create archive
-        run: tar -C release -czvf ${{ env.ZIP_NAME }} .
+        run: |
+          mv release tar -czvf ${{ env.RELEASE_NAME }}.tar.gz ${{ env.RELEASE_NAME }}
       - name: List files
         run: ls -l
       - name: Update MacOS-related asset in latest release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest-1
-          files: ${{ env.ZIP_NAME }}
+          files: ${{ env.RELEASE_NAME }}.tar.gz
