@@ -23,6 +23,7 @@ jobs:
         run: windeployqt.exe release        
       - name: Rename release directory
         run: rename release ${{ env.ARCHIVE_NAME }}
+        shell: cmd
       - name: Create zip-file
         shell: pwsh
         run: Compress-Archive -Path ${{ env.ARCHIVE_NAME }}/* -DestinationPath ${{ env.ARCHIVE_NAME }}.zip
