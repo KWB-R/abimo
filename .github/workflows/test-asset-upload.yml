@@ -34,7 +34,7 @@ jobs:
           mkdir release
           echo "build result" > release/linux-release.txt
       - name: Create archive
-        run: tar -czvf ${{ env.ZIP_NAME }} release/*
+        run: tar -czvf ${{ env.ZIP_NAME }} -C release *
       - name: List files
         run: ls -l
       - name: Update Linux-related asset in latest release
@@ -53,7 +53,7 @@ jobs:
           mkdir release
           echo "build result" > release/macos-release.txt
       - name: Create archive
-        run: tar -czvf ${{ env.ZIP_NAME }} release/*
+        run: tar -czvf ${{ env.ZIP_NAME }} -C release *
       - name: List files
         run: ls -l
       - name: Update MacOS-related asset in latest release
