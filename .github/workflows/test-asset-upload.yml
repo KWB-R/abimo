@@ -9,8 +9,8 @@ jobs:
     env:
       ZIP_NAME: abimo_latest_win64.zip
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+#      - name: Checkout
+#        uses: actions/checkout@v3
       - name: Fake the result of a build process
         run: |
           mkdir release
@@ -23,4 +23,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest-1
-          files: release abimo_win64
+          files: abimo_win64
