@@ -32,7 +32,7 @@ jobs:
       - name: Fake the result of a build process
         run: |
           mkdir release
-          cat "build result" > release/linux-release.txt
+          echo "build result" > release/linux-release.txt
       - name: Create archive
         run: tar -czvf ${{ env.ZIP_NAME }} release/*
       - name: List files
@@ -51,7 +51,7 @@ jobs:
       - name: Fake the result of a build process
         run: |
           mkdir release
-          cat "build result" > release/macos-release.txt
+          echo "build result" > release/macos-release.txt
       - name: Create archive
         run: tar -czvf ${{ env.ZIP_NAME }} release/*
       - name: List files
