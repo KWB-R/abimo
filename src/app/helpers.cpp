@@ -1,4 +1,5 @@
 #include <vector>
+#include <math.h> // for pow()
 
 #include <QCommandLineParser>
 #include <QDateTime>
@@ -9,6 +10,7 @@
 #include <QStringList>
 
 #include "helpers.h"
+#include "structs.h"
 
 QString helpers::nowString()
 {
@@ -189,6 +191,43 @@ float helpers::stringToFloat(QString string, QString context, bool debug)
     return result;
 }
 
+QString helpers::formatFloat(float value, int length, int digits)
+{
+    char format[16];
+    char buffer[64];
+
+    // Set "fmt" for the next "sprintf" call
+    qsnprintf(format, sizeof(format), "%%0%d.%df", length, digits);
+
+    // Use the format string when formatting the value with "sprintf"
+    qsnprintf(buffer, sizeof(buffer), (const char*) format, value);
+
+    return QString(buffer);
+}
+
+QString helpers::rightJustifiedNumber(QString value, int width, QChar fill)
+{
+    int length = value.length();
+
+    // If the string has already the desired width, return the string
+    if (length == width) {
+        return value;
+    }
+
+    QChar minus('-');
+
+    // Add zeros to the left of the string (after "minus" if applicable)
+    return value.startsWith(minus) ?
+        value.right(length - 1).rightJustified(width - 1, fill).prepend(minus) :
+        value.rightJustified(width, fill);
+}
+
+float helpers::roundFloat(float value, int digits)
+{
+    float factor = pow(10, digits);
+    return (float) round(factor * value) / factor;
+}
+
 //
 // Find the index of a value in a sorted array
 //
@@ -229,4 +268,37 @@ float helpers::interpolate(
     }
 
     return 0.0;
+}
+
+QVector<int> helpers::rangesStringToIntegerSequence(QString s)
+{
+    QVector<int> sequence;
+
+    QStringList parts = s.trimmed().split(",", QString::SkipEmptyParts);
+
+    for (int i = 0; i < parts.size(); i++) {
+
+        IntegerRange range = splitRangeString(parts.at(i));
+
+        for (int value = range.from; value <= range.to; value++) {
+            sequence.append(value);
+        }
+    }
+
+    return sequence;
+}
+
+IntegerRange helpers::splitRangeString(QString s)
+{
+    IntegerRange range;
+
+    QStringList ab = s.trimmed().split('-', QString::SkipEmptyParts);
+
+    // Number of parts after splitting must be one or two
+    assert(ab.length() <= 2);
+
+    range.from = ab.at(0).trimmed().toInt();
+    range.to = ab.at(ab.length() > 1 ? 1 : 0).trimmed().toInt();
+
+    return range;
 }

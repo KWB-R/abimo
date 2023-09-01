@@ -8,33 +8,38 @@
 
 #include <QByteArray>
 #include <QDate>
-#include <QHash>
 #include <QString>
 #include <QVector>
 
 #include "dbaseField.h"
 #include "dbaseFile.h"
-#include "initValues.h"
 
 class DbaseWriter : public DbaseFile
 {
 public:
-    DbaseWriter(const QString& filePath, const InitValues& initValues);
+    DbaseWriter(QString& filePath);
     bool write();
     void addRecord();
-    void setRecordField(int i, const QString& value);
+    void setRecordField(int i, QString& value);
     void setRecordField(int i, float value);
-    void setRecordField(const QString& name, const QString& value);
-    void setRecordField(const QString& name, float value);
+
+    void setRecordField(const char* name, QString value);
+    void setRecordField(const char* name, int value);
+    void setRecordField(const char* name, float value);
+
 private:
-    QVector<QVector<QString>> record;
-    QVector<DbaseField> fields;
     int writeFileHeader(QByteArray& data);
+    int writeFileHeaderBase(QByteArray& data, int index, DbaseFileHeader& header);
+    int writeFileHeaderField(QByteArray& data, int index, DbaseField field);
+
     void writeFileData(QByteArray& data);
     int writeBytes(QByteArray& data, int index, int value, int n_values);
     int writeThreeByteDate(QByteArray& data, int index, QDate date);
     int writeFourByteInteger(QByteArray& data, int index, int value);
     int writeTwoByteInteger(QByteArray& data, int index, int value);
+private:
+    // Vector of data rows
+    QVector<QVector<QString>> m_record;
 };
 
 #endif

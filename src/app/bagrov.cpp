@@ -14,8 +14,8 @@
 
 #define UPPER_LIMIT_EYN 0.7F
 
-#define ONE_THIRD 1.0F / 3.0F
-#define TWO_THIRDS 2.0F / 3.0F
+#define ONE_THIRD (float) (1.0/3.0) //1.0F / 3.0F
+#define TWO_THIRDS (float) (2.0/3.0) //2.0F / 3.0F
 
 /*
  =======================================================================================================================
@@ -49,7 +49,26 @@ const float Bagrov::aa[]= {
     6515.556685F   // 15
 };
 
-float Bagrov::nbagro(float bage, float x)
+// Umrechnung potentieller Verdunstungen (potentialEvaporation) zu realen
+// Verdunstungen ueber Umrechnungsfaktor yRatio
+float Bagrov::realEvapoTranspiration(
+    float precipitation, // P or P + KR + BER
+    float potentialEvaporation, // ETP
+    float efficiency, // n
+    BagrovIntermediates& bagrovIntermediates
+)
+{
+    // Calculate the x-factor of the Bagrov relation
+    float xRatio = precipitation / potentialEvaporation;
+
+    // Estimate the y-factor (ratio of real evaporation to potential
+    // evaporation) and calculate the real evapotransporation using the
+    // estimated y-factor
+    return yRatio(efficiency, xRatio, bagrovIntermediates) *
+        potentialEvaporation;
+}
+
+float Bagrov::yRatio(float bage, float x, BagrovIntermediates& bi)
 {
     int i, ia, ie, j;
     float bag, bag_plus_one, reciprocal_bag_plus_one;
@@ -177,6 +196,29 @@ float Bagrov::nbagro(float bage, float x)
     else {
       //qDebug() << "y0 <= 0.9 -> not calling bagrov()";
     }
+
+    // Return the intermediate values
+    bi.a = 0;
+    bi.a0 = a0;
+    bi.a1 = a1;
+    bi.a2 = a2;
+    bi.b = b;
+    bi.bag = bag;
+    bi.bag_plus_one = bag_plus_one;
+    bi.c = c;
+    bi.epa = epa;
+    bi.eyn = eyn;
+    bi.h = h;
+    bi.h13 = h13;
+    bi.h23 = h23;
+    bi.i = i;
+    bi.j = j;
+    bi.reciprocal_bag_plus_one = reciprocal_bag_plus_one;
+    bi.sum_1 = sum_1;
+    bi.sum_2 = sum_2;
+    bi.w = w;
+    bi.x = x;
+    bi.y0 = y0;
 
     // Return y0 (1.0 at maximum)
     return helpers::min(y0, 1.0);

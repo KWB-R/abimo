@@ -153,7 +153,7 @@ void MainWindow::computeFile()
     repaint();
 
     if (! dbReader.checkAndRead()) {
-        critical(dbReader.getFullError());
+        critical(dbReader.getError().textLong);
         return;
     }
 

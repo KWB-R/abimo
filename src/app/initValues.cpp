@@ -13,27 +13,41 @@
 #include "helpers.h"
 #include "initValues.h"
 #include "saxHandler.h"
+#include "structs.h" // IntegerRange
 
 InitValues::InitValues():
 
-    // Infiltrationsfaktoren (0 = roof, 1-4 = surface classes 1-4)
-    infiltrationFactors({0.00F, 0.10F, 0.30F, 0.60F, 0.90F}),
+    infiltrationFactors({
+        0.00F, // [0] roof
+        0.10F, // [1] surface class 1
+        0.30F, // [2] surface class 2
+        0.60F, // [3] surface class 3
+        0.90F  // [4] surface class 4
+    }),
 
-    // Bagrovwerte (0 = roof, 1-4 = surface classes 1-4)
-    bagrovValues({0.05F, 0.11F, 0.11F, 0.25F, 0.40F}),
+    bagrovValues({
+        0.05F, // [0] roof
+        0.11F, // [1] surface class 1
+        0.11F, // [2] surface class 2
+        0.25F, // [3] surface class 3
+        0.40F  // [4] surface class 4
+    }),
 
-    // Nachkomma der Ergebnisse
-    digitsTotalRunoff(3),
-    digitsRunoff(3),
-    digitsInfiltrationRate(3),
-    digitsTotalRunoffFlow(3),
-    digitsRainwaterRunoff(3),
-    digitsTotalSubsurfaceFlow(3),
-    digitsTotalArea(0),
-    digitsEvaporation(3),
+    resultDigits({
+        {(int) OutputColumn::TotalRunoff_R, 3},
+        {(int) OutputColumn::SurfaceRunoff_ROW, 3},
+        {(int) OutputColumn::Infiltration_RI, 3},
+        {(int) OutputColumn::TotalRunoffFlow_RVOL, 3},
+        {(int) OutputColumn::SurfaceRunoffFlow_ROWVOL, 3},
+        {(int) OutputColumn::InfiltrationFlow_RIVOL, 3},
+        {(int) OutputColumn::TotalArea_FLAECHE, 0},
+        {(int) OutputColumn::Evaporation_VERDUNSTUN, 3},
+    }),
 
     irrigationToZero(false),
-    precipitationCorrectionFactor(1.09f),
+
+    precipitationCorrectionFactor(1.09F),
+
     countSets(0)
 {
 }
@@ -63,7 +77,7 @@ QString InitValues::updateFromConfig(InitValues &initValues, QString configFileN
     if (!xmlReader.parse(&data)) {
         errorMessage = prefix + "korrupte Datei.\n" + "Nutze Standardwerte.";
     }
-    else if (! initValues.allSet()) {
+    else if (!initValues.allSet()) {
         errorMessage = prefix + "fehlende Werte.\n" + "Ergaenze mit Standardwerten.";
     }
 
@@ -72,155 +86,89 @@ QString InitValues::updateFromConfig(InitValues &initValues, QString configFileN
     return errorMessage;
 }
 
-void InitValues::setInfiltrationFactor(int index, float value) {
+void InitValues::setInfiltrationFactor(int index, float value)
+{
     infiltrationFactors[index] = value;
     countSets |= 1 << (0 + index);
 }
 
-void InitValues::setBagrovValue(int index, float value) {
+void InitValues::setBagrovValue(int index, float value)
+{
     bagrovValues[index] = value;
     countSets |= 1 << (5 + index);
 }
 
-void InitValues::setDigitsTotalRunoff(int v) {
-    digitsTotalRunoff = v;
-    countSets |= 1 << 10;
+void InitValues::setResultDigits(OutputColumn column, int n)
+{
+    resultDigits[(int) column] = n;
+    countSets |= 1 << ((int) column); // 10 - 17
 }
 
-void InitValues::setDigitsRunoff(int v) {
-    digitsRunoff = v;
-    countSets |= 1 << 11;
-}
-
-void InitValues::setDigitsInfiltrationRate(int v) {
-    digitsInfiltrationRate = v;
-    countSets |= 1 << 12;
-}
-
-void InitValues::setDigitsTotalRunoffFlow(int v) {
-    digitsTotalRunoffFlow = v;
-    countSets |= 1 << 13;
-}
-
-void InitValues::setDigitsRainwaterRunoff(int v) {
-    digitsRainwaterRunoff = v;
-    countSets |= 1 << 14;
-}
-
-void InitValues::setDigitsTotalSubsurfaceFlow(int v) {
-    digitsTotalSubsurfaceFlow = v;
-    countSets |= 1 << 15;
-}
-
-void InitValues::setDigitsTotalArea(int v) {
-    digitsTotalArea = v;
-    countSets |= 1 << 16;
-}
-
-void InitValues::setDigitsEvaporation(int v) {
-    digitsEvaporation = v;
-    countSets |= 1 << 17;
-}
-
-void InitValues::setIrrigationToZero(bool v) {
+void InitValues::setIrrigationToZero(bool v)
+{
     irrigationToZero = v;
     countSets |= 1 << 18;
 }
 
-void InitValues::setPrecipitationCorrectionFactor(float v) {
+void InitValues::setPrecipitationCorrectionFactor(float v)
+{
     precipitationCorrectionFactor = v;
     countSets |= 1 << 19;
 }
 
-float InitValues::getInfiltrationFactor(int index) const {
+float InitValues::getInfiltrationFactor(int index) const
+{
     return infiltrationFactors.at(index);
 }
 
-float InitValues::getBagrovValue(int index) const {
+float InitValues::getRunoffFactor(int index) const
+{
+    return 1.0F - infiltrationFactors.at(index);
+}
+
+float InitValues::getBagrovValue(int index) const
+{
     return bagrovValues.at(index);
 }
 
-int InitValues::getDigitsTotalRunoff() const {
-    return digitsTotalRunoff;
+int InitValues::getResultDigits(OutputColumn column) const
+{
+    return resultDigits[(int) column];
 }
 
-int InitValues::getDigitsRunoff() const {
-    return digitsRunoff;
-}
-
-int InitValues::getDigitsInfiltrationRate() const {
-    return digitsInfiltrationRate;
-}
-
-int InitValues::getDigitsTotalRunoffFlow() const {
-    return digitsTotalRunoffFlow;
-}
-
-int InitValues::getDigitsRainwaterRunoff() const {
-    return digitsRainwaterRunoff;
-}
-
-int InitValues::getDigitsTotalSubsurfaceFlow() const {
-    return digitsTotalSubsurfaceFlow;
-}
-
-int InitValues::getDigitsTotalArea() const {
-    return digitsTotalArea;
-}
-
-int InitValues::getDigitsEvaporation() const {
-    return digitsEvaporation;
-}
-
-bool InitValues::getIrrigationToZero() const {
+bool InitValues::getIrrigationToZero() const
+{
     return irrigationToZero;
 }
 
-float InitValues::getPrecipitationCorrectionFactor() const {
+float InitValues::getPrecipitationCorrectionFactor() const
+{
     return precipitationCorrectionFactor;
 }
 
-bool InitValues::allSet() const {
-    return countSets == 1048575;
+bool InitValues::allSet() const
+{
+    return countSets == ((1 << 20) - 1); //1048575;
 }
 
-int InitValues::getCountSets() const {
-    return countSets;
-}
+void InitValues::putToHashOfType(QString districts, int value, int hashType)
+{
+    QHash<int, QHash<int, int>*> hashPointers;
 
-void InitValues::putToHashOfType(QString districts, int value, int hashType) {
+    hashPointers[11] = &hashETP;
+    hashPointers[12] = &hashETPS;
+    hashPointers[13] = &hashEG;
 
-    if (hashType == 11) {
-        putToReferencedHash(districts, value, hashETP);
-    }
-    else if (hashType == 12) {
-        putToReferencedHash(districts, value, hashETPS);
-    }
-    else if (hashType == 13) {
-        putToReferencedHash(districts, value, hashEG);
-    }
-}
-
-void InitValues::putToReferencedHash(QString districts, int value, QHash<int, int> &hash) {
+    QVector<int> numbers;
 
     if (districts.length() == 0) {
-        districts = "0";
+        numbers.append(0);
+    }
+    else {
+        numbers = helpers::rangesStringToIntegerSequence(districts);
     }
 
-    QStringList districtList = districts.split(",", QString::SkipEmptyParts);
-
-    for (int i = 0; i < districtList.size(); ++i) {
-        QString districtRange = districtList.at(i).trimmed();
-        if (districtRange.contains("-")) {
-            QStringList rangeLimits = districtRange.split("-", QString::SkipEmptyParts);
-            int minId = rangeLimits.at(0).trimmed().toInt();
-            int maxId = rangeLimits.at(1).trimmed().toInt();
-            for (int id = minId; id <= maxId; ++id) {
-                hash[id] = value;
-            }
-        }
-        else {
-            hash[districtRange.toInt()] = value;
-        }
+    for (int i = 0; i < numbers.size(); i++) {
+        (*hashPointers[hashType])[numbers.at(i)] = value;
     }
 }

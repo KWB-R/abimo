@@ -11,37 +11,39 @@ AbimoReader::AbimoReader(const QString& file) : DbaseReader(file),
     // Child constructor code here
 }
 
+AbimoReader::~AbimoReader()
+{
+
+};
+
 QStringList AbimoReader::requiredFields()
 {
-    // The conversion function used in calculation.cpp to convert string to
-    // numeric is given as a comment
-
     return {
-        "NUTZUNG",    // toInt()
-        "CODE",       // none?
-        "REGENJA",    // toInt()
-        "REGENSO",    // toInt()
-        "FLUR",       // toFloat()
-        "TYP",        // toInt()
-        "FELD_30",    // toInt()
-        "FELD_150",   // toInt()
-        "BEZIRK",     // toInt()
-        "PROBAU",     // toFloat()
-        "PROVGU",     // toFloat()
-        "VGSTRASSE",  // toFloat()
-        "KAN_BEB",    // toFloat()
-        "KAN_VGU",    // toFloat()
-        "KAN_STR",    // toFloat()
-        "BELAG1",     // toFloat()
-        "BELAG2",     // toFloat()
-        "BELAG3",     // toFloat()
-        "BELAG4",     // toFloat()
-        "STR_BELAG1", // toFloat()
-        "STR_BELAG2", // toFloat()
-        "STR_BELAG3", // toFloat()
-        "STR_BELAG4", // toFloat()
-        "FLGES",      // toFloat()
-        "STR_FLGES"   // toFloat()
+        "NUTZUNG",    // int
+        "CODE",       // QString
+        "REGENJA",    // int
+        "REGENSO",    // int
+        "FLUR",       // float
+        "TYP",        // int
+        "FELD_30",    // int
+        "FELD_150",   // int
+        "BEZIRK",     // int
+        "PROBAU",     // float
+        "PROVGU",     // float
+        "VGSTRASSE",  // float
+        "KAN_BEB",    // float
+        "KAN_VGU",    // float
+        "KAN_STR",    // float
+        "BELAG1",     // float
+        "BELAG2",     // float
+        "BELAG3",     // float
+        "BELAG4",     // float
+        "STR_BELAG1", // float
+        "STR_BELAG2", // float
+        "STR_BELAG3", // float
+        "STR_BELAG4", // float
+        "FLGES",      // float
+        "STR_FLGES"   // float
       };
 }
 
@@ -50,6 +52,7 @@ bool AbimoReader::checkAndRead()
     QString fileName = m_file.fileName();
     QString text;
 
+    // Call the checkAndRead() function of the parent class first
     bool succeeded = DbaseReader::checkAndRead();
 
     if (!succeeded) {
@@ -59,20 +62,22 @@ bool AbimoReader::checkAndRead()
     if (!isAbimoFile()) {
         text = "Die Datei '%1' ist kein valider 'Input File',\n";
         text += "Ueberpruefen Sie die Spaltennamen und die Vollstaendigkeit.";
-        m_fullError = text.arg(fileName);
+        m_error.textLong = text.arg(fileName);
         return false;
     }
 
-    m_fullError = "";
+    m_error.textLong = "";
     return true;
 }
 
 bool AbimoReader::isAbimoFile()
 {
-    return helpers::containsAll(m_fieldPositionMap, requiredFields());
+    QStringList fieldNames = AbimoReader::requiredFields();
+
+    return hasAllOfTheseFields(fieldNames);
 }
 
-void AbimoReader::fillRecord(int rowIndex, AbimoRecord& record, bool debug)
+void AbimoReader::fillRecord(int rowIndex, AbimoInputRecord& record, bool debug)
 {
     m_rowIndex = rowIndex;
     m_debug = debug;
