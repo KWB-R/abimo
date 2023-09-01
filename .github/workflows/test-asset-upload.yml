@@ -12,13 +12,15 @@ jobs:
 #      - name: Checkout
 #        uses: actions/checkout@v3
       - name: Fake the result of a build process
+        shell: cmd
         run: |
           mkdir release
           echo "build result" > release/windows-release.txt
-        shell: cmd
       - name: Rename release directory
-        run: rename release abimo_win64
         shell: cmd
+        run: |
+          rename release abimo_win64
+          dir /s /b
       - name: Update Windows-related asset in latest release
         uses: softprops/action-gh-release@v1
         with:
