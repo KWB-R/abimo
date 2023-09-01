@@ -24,40 +24,40 @@ jobs:
         with:
           tag_name: latest-1
           files: ${{ env.ZIP_NAME }}
-    linux:
-      runs-on: linux-latest
-      env:
-        ZIP_NAME: abimo_latest_linux.tar.gz
-      steps:
-        - name: Fake the result of a build process
-          run: |
-            mkdir release
-            cat "build result" > release/linux-release.txt
-        - name: Create archive
-          run: tar -czvf ${{ env.ZIP_NAME }} release/*
-        - name: List files
-          run: ls -l
-        - name: Update Linux-related asset in latest release
-          uses: softprops/action-gh-release@v1
-          with:
-            tag_name: latest-1
-            files: ${{ env.ZIP_NAME }}
+  linux:
+    runs-on: linux-latest
+    env:
+      ZIP_NAME: abimo_latest_linux.tar.gz
+    steps:
+      - name: Fake the result of a build process
+        run: |
+          mkdir release
+          cat "build result" > release/linux-release.txt
+      - name: Create archive
+        run: tar -czvf ${{ env.ZIP_NAME }} release/*
+      - name: List files
+        run: ls -l
+      - name: Update Linux-related asset in latest release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-1
+          files: ${{ env.ZIP_NAME }}
 
-    mac:
-      runs-on: macos-latest
-      env:
-        ZIP_NAME: abimo_latest_macos.tar.gz
-      steps:
-        - name: Fake the result of a build process
-          run: |
-            mkdir release
-            cat "build result" > release/macos-release.txt
-        - name: Create archive
-          run: tar -czvf ${{ env.ZIP_NAME }} release/*
-        - name: List files
-          run: ls -l
-        - name: Update MacOS-related asset in latest release
-          uses: softprops/action-gh-release@v1
-          with:
-            tag_name: latest-1
-            files: ${{ env.ZIP_NAME }}
+  mac:
+    runs-on: macos-latest
+    env:
+      ZIP_NAME: abimo_latest_macos.tar.gz
+    steps:
+      - name: Fake the result of a build process
+        run: |
+          mkdir release
+          cat "build result" > release/macos-release.txt
+      - name: Create archive
+        run: tar -czvf ${{ env.ZIP_NAME }} release/*
+      - name: List files
+        run: ls -l
+      - name: Update MacOS-related asset in latest release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest-1
+          files: ${{ env.ZIP_NAME }}
