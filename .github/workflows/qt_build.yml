@@ -4,10 +4,10 @@ on: [push, pull_request]
 
 jobs:
   windows:
-    name: Windows (Build only)
+    name: Windows
     runs-on: windows-latest
     env:
-      ZIP_NAME: abimo_latest_win64.zip
+      ARCHIVE_NAME: abimo_latest_windows
     steps:
       - name: MSVC Environment Setup
         uses: ilammy/msvc-dev-cmd@v1.11.0
@@ -20,35 +20,27 @@ jobs:
       - name: Build
         run: nmake release
       - name: Deploy
-        run: windeployqt.exe release
+        run: windeployqt.exe release        
+      - name: Rename release directory
+        run: rename release ${{ env.ARCHIVE_NAME }}
+      - name: Create zip-file
+        shell: pwsh
+        run: Compress-Archive -Path ${{ env.ARCHIVE_NAME }}/* -DestinationPath ${{ env.ARCHIVE_NAME }}.zip
+      - name: List files
+        shell: cmd
+        run: dir /s /b
       - name: Update Windows-related asset in latest release
-        uses: meeDamian/github-release@2.0
+        uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: latest-1
-          files: abimo_win64.zip:release/
-          allow_override: true
-#      - name: Upload windows release
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: windows_abimo_release
-#          path: release
-#      - name: Archive Release
-#        uses: thedoctor0/zip-release@master
-#        with:
-#          filename: ${{ env.ZIP_NAME}}
-#          path: release
-#      - name: Update asset in latest release
-#        uses: pyTooling/Actions/releaser@main
-#        with:
-#          tag: latest
-#          rm: true
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          files: ${{ env.ZIP_NAME}}
-
-  linux_1:
-    name: Linux Ubuntu 20.04 (Build only)
+          tag_name: latest-1
+          files: ${{ env.ARCHIVE_NAME }}.zip
+  linux:
+    name: Linux Ubuntu
     runs-on: ubuntu-20.04
+#    runs-on: ubuntu-22.04
+    env:
+      ARCHIVE_NAME: abimo_latest_linux
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -58,50 +50,22 @@ jobs:
         run: qmake src/app/app.pro
       - name: Build
         run: make
-      - name: Upload linux release
-        uses: actions/upload-artifact@v3
+      - name: Create archive and list files
+        run: |
+          mv release ${{ env.ARCHIVE_NAME }}
+          tar -czvf ${{ env.ARCHIVE_NAME }}.tar.gz ${{ env.ARCHIVE_NAME }}
+          ls -l
+      - name: Update Linux-related asset in latest release
+        uses: softprops/action-gh-release@v1
         with:
-          name: linux_ubuntu-20.04_abimo_release
-          path: release
-  linux_2:
-    name: Linux Ubuntu 22.04 (Build only)
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-      - name: Run QMake
-        run: qmake src/app/app.pro
-      - name: Build
-        run: make
-      - name: Upload linux release
-        uses: actions/upload-artifact@v3
-        with:
-          name: abimo_latest_unix64
-          path: release
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: abimo_latest_unix64
-      - name: Display structure of downloaded files
-        run: ls -R
-      - name: Archive Release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: abimo_latest_unix64.zip
-          path: release
-          #exclusions: '*.git* /*node_modules/* .editorconfig'
-      - name: Update binary in latest-dev release
-        uses: pyTooling/Actions/releaser@main
-        with:
-          tag: latest
-          rm: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: abimo_latest_unix64.zip
-  mac:
-    name: Mac (Build only)
+          tag_name: latest-1
+          files: ${{ env.ARCHIVE_NAME }}.tar.gz
+  macos:
+    name: macOS
     runs-on: macos-latest
+    env:
+      ARCHIVE_NAME: abimo_latest_macos
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -110,9 +74,15 @@ jobs:
       - name: Run QMake
         run: qmake src/app/app.pro
       - name: Build
-        run: make
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        run: make        
+      - name: Create archive and list files
+        run: |
+          mv release ${{ env.ARCHIVE_NAME }}
+          tar -czvf ${{ env.ARCHIVE_NAME }}.tar.gz ${{ env.ARCHIVE_NAME }}
+          ls -l
+      - name: Update macOS-related asset in latest release
+        uses: softprops/action-gh-release@v1
         with:
-          name: macos_abimo_release
-          path: release
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: latest-1
+          files: ${{ env.ARCHIVE_NAME }}.tar.gz
