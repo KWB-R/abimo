@@ -18,9 +18,7 @@ jobs:
           echo "build result" > release/windows-release.txt
       - name: Create zip-file
         shell: pwsh
-        run: |
-          cd release
-          Compress-Archive * ${{ env.ZIP_NAME }}
+        run: Compress-Archive -Path release/* -DestinationPath ${{ env.ZIP_NAME }}
       - name: List files
         shell: cmd
         run: dir /s /b
