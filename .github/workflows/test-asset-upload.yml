@@ -55,7 +55,8 @@ jobs:
           ls -l
       - name: Create archive
         run: |
-          mv release tar -czvf ${{ env.RELEASE_NAME }}.tar.gz ${{ env.RELEASE_NAME }}
+          mv release ${{ env.RELEASE_NAME }}
+          tar -czvf ${{ env.RELEASE_NAME }}.tar.gz ${{ env.RELEASE_NAME }}
       - name: List files
         run: ls -l
       - name: Update MacOS-related asset in latest release
