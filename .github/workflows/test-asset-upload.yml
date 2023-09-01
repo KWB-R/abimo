@@ -1,6 +1,6 @@
 name: Test asset upload
 
-on: workflow_dispatch
+on: push
 
 jobs:
   main_job:
