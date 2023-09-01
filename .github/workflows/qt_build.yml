@@ -6,6 +6,8 @@ jobs:
   windows:
     name: Windows (Build only)
     runs-on: windows-latest
+    env:
+      ZIP_NAME: abimo_latest_win64.zip
     steps:
       - name: MSVC Environment Setup
         uses: ilammy/msvc-dev-cmd@v1.11.0
@@ -19,11 +21,24 @@ jobs:
         run: nmake release
       - name: Deploy
         run: windeployqt.exe release
-      - name: Upload windows release
-        uses: actions/upload-artifact@v3
+#      - name: Upload windows release
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: windows_abimo_release
+#          path: release
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
         with:
-          name: windows_abimo_release
+          filename: ${{ env.ZIP_NAME}}
           path: release
+      - name: Update asset in latest release
+        uses: pyTooling/Actions/releaser@main
+        with:
+          tag: latest
+          rm: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.ZIP_NAME}}
+
   linux_1:
     name: Linux Ubuntu 20.04 (Build only)
     runs-on: ubuntu-20.04
