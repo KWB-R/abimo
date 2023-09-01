@@ -16,13 +16,15 @@ jobs:
         run: |
           mkdir release
           echo "build result" > release/windows-release.txt
-      - name: Rename release directory
-        shell: cmd
+      - name: Create zip-file
+        shell: pwsh
         run: |
-          rename release abimo_win64
-          dir /s /b
+          Compress-Archive release {{ env.ZIP_NAME }}
+      - name: List files
+        shell: cmd
+        run: dir /s /b
       - name: Update Windows-related asset in latest release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest-1
-          files: abimo_win64
+          files: {{ env.ZIP_NAME }}
