@@ -54,7 +54,7 @@ jobs:
           echo "build result" > release/macos-release.txt
           ls -l
       - name: Create archive
-        run: tar -czvf ${{ env.ZIP_NAME }} -C ./release *
+        run: tar -C release -cvf ${{ env.ZIP_NAME }} *
       - name: List files
         run: ls -l
       - name: Update MacOS-related asset in latest release
