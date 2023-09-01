@@ -22,4 +22,5 @@ jobs:
       - name: Update Windows-related asset in latest release
         uses: softprops/action-gh-release@v1
         with:
+          tag: latest-1
           files: release abimo_win64
