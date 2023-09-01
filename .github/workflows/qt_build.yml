@@ -2,6 +2,9 @@ name: QT Build
 
 on: [push, pull_request]
 
+env:
+  TAG_NAME_LATEST: latest
+
 jobs:
   windows:
     name: Windows
@@ -34,7 +37,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: latest-1
+          tag_name: ${{ env.TAG_NAME_LATEST }}
           files: ${{ env.ARCHIVE_NAME }}.zip
   linux:
     name: Linux Ubuntu
@@ -60,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: latest-1
+          tag_name: ${{ env.TAG_NAME_LATEST }}
           files: ${{ env.ARCHIVE_NAME }}.tar.gz
   macos:
     name: macOS
@@ -85,5 +88,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: latest-1
+          tag_name: ${{ env.TAG_NAME_LATEST }}
           files: ${{ env.ARCHIVE_NAME }}.tar.gz
