@@ -56,6 +56,7 @@ jobs:
         run: make
       - name: Create archive and list files
         run: |
+          ls -l
           mv release ${{ env.ARCHIVE_NAME }}
           tar -czvf ${{ env.ARCHIVE_NAME }}.tar.gz ${{ env.ARCHIVE_NAME }}
           ls -l
@@ -81,6 +82,7 @@ jobs:
         run: make        
       - name: Create archive and list files
         run: |
+          ls -l
           mv release ${{ env.ARCHIVE_NAME }}
           tar -czvf ${{ env.ARCHIVE_NAME }}.tar.gz ${{ env.ARCHIVE_NAME }}
           ls -l
