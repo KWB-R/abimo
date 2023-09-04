@@ -17,11 +17,12 @@ jobs:
 #      - name: Install Qt
 #        uses: jurplel/install-qt-action@v3
       - name: Install Qt
-        run: |
-          brew install qt@5
-          ls -l /opt/homebrew/opt/qt@5/bin
+        run: brew install qt@5
       - name: Export variables
-        run: echo 'export PATH="/opt/homebrew/opt/qt@5/bin:$PATH"' >> ~/.zshrc
+        run: |
+          echo 'export PATH="/usr/local/opt/qt@5/bin:$PATH"' >> /Users/runner/.bash_profile
+          export LDFLAGS="-L/usr/local/opt/qt@5/lib"
+          export CPPFLAGS="-I/usr/local/opt/qt@5/include"
       - name: Run QMake
         run: qmake src/app/app.pro
       - name: Build
