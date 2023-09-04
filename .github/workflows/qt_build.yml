@@ -17,7 +17,9 @@ jobs:
 #      - name: Install Qt
 #        uses: jurplel/install-qt-action@v3
       - name: Install Qt
-        run: brew install qt@5
+        run: |
+          brew install qt@5
+          ls -l /opt/homebrew/opt/qt@5/bin
       - name: Export variables
         run: echo 'export PATH="/opt/homebrew/opt/qt@5/bin:$PATH"' >> ~/.zshrc
       - name: Run QMake
