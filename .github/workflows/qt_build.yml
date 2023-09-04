@@ -25,7 +25,7 @@ jobs:
           export LDFLAGS="-L/usr/local/opt/qt@5/lib"
           export CPPFLAGS="-I/usr/local/opt/qt@5/include"
       - name: Run QMake
-        run: qmake src/app/app.pro
+        run: /usr/local/opt/qt@5/qmake src/app/app.pro
       - name: Build
         run: make release
       - name: Create archive and list files
