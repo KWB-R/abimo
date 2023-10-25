@@ -431,7 +431,7 @@ void Calculation::doCalculationsFor(
 
     // Provide soil properties. They are required to calculate tha actual
     // evapotranspiration. In the case of water bodies, all values are 0.0.
-    SoilProperties soilProperties = getSoilProperties(
+    intermediates.soilProperties = getSoilProperties(
         usageTuple.usage,
         usageTuple.yield,
         input.depthToWaterTable,
@@ -444,7 +444,7 @@ void Calculation::doCalculationsFor(
         actualEvaporation(
             usageTuple,
             potentialEvaporation,
-            soilProperties,
+            intermediates.soilProperties,
             precipitation
         );
 
@@ -862,6 +862,11 @@ void Calculation::logResults(
             results.runoffSealed.surface[i]
         );
     }
+
+    logVariable("sP.depthToWaterTable", results.soilProperties.depthToWaterTable);
+    logVariable("sP.usableFieldCapacity", results.soilProperties.usableFieldCapacity);
+    logVariable("sP.potentialCapillaryRise_TAS", results.soilProperties.potentialCapillaryRise_TAS);
+    logVariable("sP.meanPotentialCapillaryRiseRate", results.soilProperties.meanPotentialCapillaryRiseRate);
 
     logVariable("surfaceRunoff_ROW", results.surfaceRunoff_ROW);
     logVariable("surfaceRunoffFlow_ROWVOL", results.surfaceRunoffFlow_ROWVOL);
