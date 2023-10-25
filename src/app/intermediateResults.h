@@ -5,6 +5,10 @@
 
 struct IntermediateResults
 {
+    Precipitation precipitation;
+    UsageTuple usageTuple;
+    PotentialEvaporation potentialEvaporation;
+
     RunoffSealed runoffSealed;
 
     // Langjaehriger MW des Regenwasserabflusses [mm/a] 003 N

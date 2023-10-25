@@ -322,7 +322,7 @@ bool Calculation::calculate(QString& outputFile, bool debug)
 
 void Calculation::doCalculationsFor(
     AbimoInputRecord& input,
-    IntermediateResults& results,
+    IntermediateResults& intermediates,
     InitValues& initValues,
     UsageConfiguration& usageConfiguration,
     Counters& counters,
@@ -357,6 +357,10 @@ void Calculation::doCalculationsFor(
         protocolStream
     );
 
+    intermediates.potentialEvaporation = potentialEvaporation;
+    intermediates.usageTuple = usageTuple;
+    intermediates.precipitation = precipitation;
+
     // Set default area if total area is zero
     handleTotalAreaOfZero(input, counters);
 
@@ -374,12 +378,12 @@ void Calculation::doCalculationsFor(
     // index 0 = roof
 
     // Theoretical total runoff assuming that the whole area is a roof
-    results.runoffSealed.roof = precipitation.perYearCorrectedFloat -
+    intermediates.runoffSealed.roof = precipitation.perYearCorrectedFloat -
         Bagrov::realEvapoTranspiration(
             precipitation.perYearCorrectedFloat,
             potentialEvaporation.perYearFloat,
             initValues.getBagrovValue(0),
-            results.bagrovIntermediates
+            intermediates.bagrovIntermediates
         );
 
     // Actual runoff from roof surfaces (Abfluss der Dachflaechen), old: rowd
@@ -388,21 +392,21 @@ void Calculation::doCalculationsFor(
         input.mainFractionBuiltSealed *
         input.builtSealedFractionConnected *
         input.areaFractionMain() *
-        results.runoffSealed.roof;
+        intermediates.runoffSealed.roof;
 
     // runoff from sealed surfaces
 
     // indices 1 - 4 = surface classes 1 - 4
-    for (int i = 0; i < static_cast<int>(results.runoffSealed.surface.size()); i++) {
+    for (int i = 0; i < static_cast<int>(intermediates.runoffSealed.surface.size()); i++) {
 
         // Theoretical total runoff assuming that the whole area is sealed and
         // connected
-        results.runoffSealed.surface[i] = precipitation.perYearCorrectedFloat -
+        intermediates.runoffSealed.surface[i] = precipitation.perYearCorrectedFloat -
             Bagrov::realEvapoTranspiration(
                 precipitation.perYearCorrectedFloat,
                 potentialEvaporation.perYearFloat,
                 initValues.getBagrovValue(i + 1),
-                results.bagrovIntermediates
+                intermediates.bagrovIntermediates
             );
 
         // Runoff from the actual partial areas that are sealed and connected
@@ -419,7 +423,7 @@ void Calculation::doCalculationsFor(
                 input.roadSealedFractionConnected *
                 input.roadFractionSealed *
                 input.areaFractionRoad()
-            ) * results.runoffSealed.surface[i];
+            ) * intermediates.runoffSealed.surface[i];
     }
 
     // runoff from unsealed surfaces
@@ -453,7 +457,7 @@ void Calculation::doCalculationsFor(
         (1 - input.builtSealedFractionConnected) *
         input.mainFractionBuiltSealed *
         input.areaFractionMain() *
-        results.runoffSealed.roof;
+        intermediates.runoffSealed.roof;
 
     // infiltration from sealed surfaces
     for (int i = 0; i < static_cast<int>(infiltration.surface.size()); i++) {
@@ -465,7 +469,7 @@ void Calculation::doCalculationsFor(
             input.roadSealedFractionSurface.at(i + 1) *
             input.roadFractionSealed *
             input.areaFractionRoad()
-        ) * results.runoffSealed.surface[i] -
+        ) * intermediates.runoffSealed.surface[i] -
         runoff.sealedSurface[i];
     }
 
@@ -473,7 +477,7 @@ void Calculation::doCalculationsFor(
     infiltration.unsealedRoads =
         (1 - input.roadFractionSealed) *
         input.areaFractionRoad() *
-        results.runoffSealed.surface.last();
+        intermediates.runoffSealed.surface.last();
 
     // infiltration from unsealed non-road surfaces
     // old: riuv
@@ -486,7 +490,7 @@ void Calculation::doCalculationsFor(
 
     // calculate infiltration rate 'ri' for entire block partial area
     // (mm/a)
-    results.infiltration_RI = (
+    intermediates.infiltration_RI = (
         infiltration.roof +
         helpers::vectorSum(infiltration.surface) +
         infiltration.unsealedRoads +
@@ -498,7 +502,7 @@ void Calculation::doCalculationsFor(
 
     // calculate runoff 'ROW' for entire block patial area (FLGES +
     // STR_FLGES) (mm/a)
-    results.surfaceRunoff_ROW = (
+    intermediates.surfaceRunoff_ROW = (
         runoff.roof +
         helpers::vectorSum(runoff.sealedSurface) +
         runoff.unsealedRoads
@@ -506,28 +510,28 @@ void Calculation::doCalculationsFor(
 
     // calculate total system losses 'r' due to runoff and infiltration
     // for entire block partial area
-    results.totalRunoff_R =
-        results.surfaceRunoff_ROW +
-        results.infiltration_RI;
+    intermediates.totalRunoff_R =
+        intermediates.surfaceRunoff_ROW +
+        intermediates.infiltration_RI;
 
     // Convert yearly heights to flows
     //================================
 
     // calculate volume 'rowvol' from runoff (qcm/s)
-    results.surfaceRunoffFlow_ROWVOL = input.yearlyHeightToVolumeFlow(
-        results.surfaceRunoff_ROW
+    intermediates.surfaceRunoffFlow_ROWVOL = input.yearlyHeightToVolumeFlow(
+        intermediates.surfaceRunoff_ROW
     );
 
     // calculate volume 'rivol' from infiltration rate (qcm/s)
-    results.infiltrationFlow_RIVOL = input.yearlyHeightToVolumeFlow(
-        results.infiltration_RI
+    intermediates.infiltrationFlow_RIVOL = input.yearlyHeightToVolumeFlow(
+        intermediates.infiltration_RI
     );
 
     // calculate volume of "system losses" 'rvol' due to surface runoff and
     // infiltration
-    results.totalRunoffFlow_RVOL =
-        results.surfaceRunoffFlow_ROWVOL +
-        results.infiltrationFlow_RIVOL;
+    intermediates.totalRunoffFlow_RVOL =
+        intermediates.surfaceRunoffFlow_ROWVOL +
+        intermediates.infiltrationFlow_RIVOL;
 
     // Set evaporation in output record
     //=================================
@@ -535,9 +539,9 @@ void Calculation::doCalculationsFor(
     // calculate evaporation 'VERDUNST' by subtracting 'R', the sum of
     // runoff and infiltration from precipitation of entire year,
     // multiplied by precipitation correction factor
-    results.evaporation_VERDUNSTUN =
+    intermediates.evaporation_VERDUNSTUN =
         precipitation.perYearCorrectedFloat -
-        results.totalRunoff_R;
+        intermediates.totalRunoff_R;
 }
 
 Precipitation Calculation::getPrecipitation(
@@ -837,6 +841,12 @@ void Calculation::logResults(
         logVariable("bagrov_y0", results.bagrovIntermediates.y0);
     }
 
+    logVariable("p.perYearCorrectedFloat", results.precipitation.perYearCorrectedFloat);
+    logVariable("p.inSummerFloat.", results.precipitation.inSummerFloat);
+    logVariable("ut.usage", (char) results.usageTuple.usage);
+    logVariable("ut.yield", results.usageTuple.yield);
+    logVariable("ut.irrigation", results.usageTuple.irrigation);
+
     logVariable("bagrov_roof", results.runoffSealed.roof);
 
     for (int i = 1; i < results.runoffSealed.surface.size(); i++) {
@@ -864,6 +874,11 @@ void Calculation::logVariable(QString name, float value)
 {
     //m_protocolStream << m_prefix << ";" <<
     m_protocolStream << name << "=" << QString::number(value, 'g', 10) << endl;
+}
+
+void Calculation::logVariable(QString name, char value)
+{
+    m_protocolStream << name << "=" << value << endl;
 }
 
 int Calculation::fillResultRecord(

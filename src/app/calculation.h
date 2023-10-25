@@ -144,6 +144,7 @@ private:
 
     void logVariable(QString name, int value);
     void logVariable(QString name, float value);
+    void logVariable(QString name, char value);
 
     static SoilProperties getSoilProperties(
         Usage usage,
