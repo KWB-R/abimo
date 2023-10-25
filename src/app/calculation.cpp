@@ -357,12 +357,13 @@ void Calculation::doCalculationsFor(
         protocolStream
     );
 
+    // Set default area if total area is zero
+    handleTotalAreaOfZero(input, counters);
+
     intermediates.potentialEvaporation = potentialEvaporation;
     intermediates.usageTuple = usageTuple;
     intermediates.precipitation = precipitation;
-
-    // Set default area if total area is zero
-    handleTotalAreaOfZero(input, counters);
+    intermediates.mainArea = input.mainArea;
 
     //
     // Do the Bagrov-calculation for sealed surfaces...
@@ -850,6 +851,8 @@ void Calculation::logResults(
 
     logVariable("pE.perYearFloat", results.potentialEvaporation.perYearFloat);
     logVariable("pE.inSummerInteger", results.potentialEvaporation.inSummerInteger);
+
+    logVariable("in.mainArea", results.mainArea);
 
     logVariable("bagrov_roof", results.runoffSealed.roof);
 

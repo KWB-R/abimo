@@ -8,6 +8,7 @@ struct IntermediateResults
     Precipitation precipitation;
     UsageTuple usageTuple;
     PotentialEvaporation potentialEvaporation;
+    float mainArea;
 
     RunoffSealed runoffSealed;
 
