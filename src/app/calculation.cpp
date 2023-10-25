@@ -854,11 +854,11 @@ void Calculation::logResults(
 
     logVariable("in.mainArea", results.mainArea);
 
-    logVariable("bagrov_roof", results.runoffSealed.roof);
+    logVariable("runoffSealed.roof", results.runoffSealed.roof);
 
-    for (int i = 1; i < results.runoffSealed.surface.size(); i++) {
+    for (int i = 0; i < results.runoffSealed.surface.size(); i++) {
         logVariable(
-            QString("bagrov_surface[%1]").arg(i),
+            QString("runoffSealed.surface[%1]").arg(i),
             results.runoffSealed.surface[i]
         );
     }
