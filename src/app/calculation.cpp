@@ -841,11 +841,15 @@ void Calculation::logResults(
         logVariable("bagrov_y0", results.bagrovIntermediates.y0);
     }
 
-    logVariable("p.perYearCorrectedFloat", results.precipitation.perYearCorrectedFloat);
-    logVariable("p.inSummerFloat.", results.precipitation.inSummerFloat);
-    logVariable("ut.usage", (char) results.usageTuple.usage);
-    logVariable("ut.yield", results.usageTuple.yield);
-    logVariable("ut.irrigation", results.usageTuple.irrigation);
+    logVariable("pr.perYearCorrectedFloat", results.precipitation.perYearCorrectedFloat);
+    logVariable("pr.inSummerFloat", results.precipitation.inSummerFloat);
+
+    logVariable("uT.usage", (char) results.usageTuple.usage);
+    logVariable("uT.yield", results.usageTuple.yield);
+    logVariable("uT.irrigation", results.usageTuple.irrigation);
+
+    logVariable("pE.perYearFloat", results.potentialEvaporation.perYearFloat);
+    logVariable("pE.inSummerInteger", results.potentialEvaporation.inSummerInteger);
 
     logVariable("bagrov_roof", results.runoffSealed.roof);
 
