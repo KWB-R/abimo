@@ -861,7 +861,7 @@ void Calculation::logResults(
 
     logVariable("in.mainArea", results.mainArea);
 
-    logVariable("runoffSealed.roof", rs.roof);
+    logVariable("rs.roof", rs.roof);
 
     for (int i = 0; i < rs.surface.size(); i++) {
         logVariable(QString("rs.surface[%1]").arg(i), rs.surface[i]);
