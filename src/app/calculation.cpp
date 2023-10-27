@@ -451,19 +451,19 @@ void Calculation::doCalculationsFor(
     // Calculate infiltration...
     // =========================
 
-    Infiltration infiltration;
+    //Infiltration infiltration;
 
     // infiltration from roof (?)
-    infiltration.roof =
+    intermediates.infiltration.roof =
         (1 - input.builtSealedFractionConnected) *
         input.mainFractionBuiltSealed *
         input.areaFractionMain() *
         intermediates.runoffSealed.roof;
 
     // infiltration from sealed surfaces
-    for (int i = 0; i < static_cast<int>(infiltration.surface.size()); i++) {
+    for (int i = 0; i < static_cast<int>(intermediates.infiltration.surface.size()); i++) {
 
-        infiltration.surface[i] = (
+        intermediates.infiltration.surface[i] = (
             input.unbuiltSealedFractionSurface.at(i + 1) *
             input.mainFractionUnbuiltSealed *
             input.areaFractionMain() +
@@ -475,14 +475,14 @@ void Calculation::doCalculationsFor(
     }
 
     // infiltration from unsealed road surfaces
-    infiltration.unsealedRoads =
+    intermediates.infiltration.unsealedRoads =
         (1 - input.roadFractionSealed) *
         input.areaFractionRoad() *
         intermediates.runoffSealed.surface.last();
 
     // infiltration from unsealed non-road surfaces
     // old: riuv
-    infiltration.unsealedSurfaces = (
+    intermediates.infiltration.unsealedSurfaces = (
         100.0F - input.mainPercentageSealed()
     ) / 100.0F * runoff.unsealedSurface_RUV;
 
@@ -492,10 +492,10 @@ void Calculation::doCalculationsFor(
     // calculate infiltration rate 'ri' for entire block partial area
     // (mm/a)
     intermediates.infiltration_RI = (
-        infiltration.roof +
-        helpers::vectorSum(infiltration.surface) +
-        infiltration.unsealedRoads +
-        infiltration.unsealedSurfaces
+        intermediates.infiltration.roof +
+        helpers::vectorSum(intermediates.infiltration.surface) +
+        intermediates.infiltration.unsealedRoads +
+        intermediates.infiltration.unsealedSurfaces
     );
 
     // Set runoff-related fields in output record
@@ -842,31 +842,43 @@ void Calculation::logResults(
         logVariable("bagrov_y0", results.bagrovIntermediates.y0);
     }
 
-    logVariable("pr.perYearCorrectedFloat", results.precipitation.perYearCorrectedFloat);
-    logVariable("pr.inSummerFloat", results.precipitation.inSummerFloat);
+    Precipitation pr = results.precipitation;
+    PotentialEvaporation pe = results.potentialEvaporation;
+    UsageTuple ut = results.usageTuple;
+    RunoffSealed rs = results.runoffSealed;
+    SoilProperties sp = results.soilProperties;
+    Infiltration inf = results.infiltration;
 
-    logVariable("uT.usage", (char) results.usageTuple.usage);
-    logVariable("uT.yield", results.usageTuple.yield);
-    logVariable("uT.irrigation", results.usageTuple.irrigation);
+    logVariable("pr.perYearCorrectedFloat", pr.perYearCorrectedFloat);
+    logVariable("pr.inSummerFloat", pr.inSummerFloat);
 
-    logVariable("pE.perYearFloat", results.potentialEvaporation.perYearFloat);
-    logVariable("pE.inSummerInteger", results.potentialEvaporation.inSummerInteger);
+    logVariable("pe.perYearFloat", pe.perYearFloat);
+    logVariable("pe.inSummerInteger", pe.inSummerInteger);
+
+    logVariable("ut.usage", (char) ut.usage);
+    logVariable("ut.yield", ut.yield);
+    logVariable("ut.irrigation", ut.irrigation);
 
     logVariable("in.mainArea", results.mainArea);
 
-    logVariable("runoffSealed.roof", results.runoffSealed.roof);
+    logVariable("runoffSealed.roof", rs.roof);
 
-    for (int i = 0; i < results.runoffSealed.surface.size(); i++) {
-        logVariable(
-            QString("runoffSealed.surface[%1]").arg(i),
-            results.runoffSealed.surface[i]
-        );
+    for (int i = 0; i < rs.surface.size(); i++) {
+        logVariable(QString("rs.surface[%1]").arg(i), rs.surface[i]);
     }
 
-    logVariable("sP.depthToWaterTable", results.soilProperties.depthToWaterTable);
-    logVariable("sP.usableFieldCapacity", results.soilProperties.usableFieldCapacity);
-    logVariable("sP.potentialCapillaryRise_TAS", results.soilProperties.potentialCapillaryRise_TAS);
-    logVariable("sP.meanPotentialCapillaryRiseRate", results.soilProperties.meanPotentialCapillaryRiseRate);
+    logVariable("sp.depthToWaterTable", sp.depthToWaterTable);
+    logVariable("sp.usableFieldCapacity", sp.usableFieldCapacity);
+    logVariable("sp.potentialCapillaryRise_TAS", sp.potentialCapillaryRise_TAS);
+    logVariable("sp.meanPotentialCapillaryRiseRate", sp.meanPotentialCapillaryRiseRate);
+
+    logVariable("infiltration.roof", inf.roof);
+    logVariable("infiltration.unsealedRoads", inf.unsealedRoads);
+    logVariable("infiltration.unsealedSurfaces", inf.unsealedSurfaces);
+
+    for (int i = 0; i < inf.surface.size(); i++) {
+        logVariable(QString("infiltration.surface[%1]").arg(i), inf.surface[i]);
+    }
 
     logVariable("surfaceRunoff_ROW", results.surfaceRunoff_ROW);
     logVariable("surfaceRunoffFlow_ROWVOL", results.surfaceRunoffFlow_ROWVOL);
