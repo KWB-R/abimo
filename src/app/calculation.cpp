@@ -872,12 +872,12 @@ void Calculation::logResults(
     logVariable("sp.potentialCapillaryRise_TAS", sp.potentialCapillaryRise_TAS);
     logVariable("sp.meanPotentialCapillaryRiseRate", sp.meanPotentialCapillaryRiseRate);
 
-    logVariable("infiltration.roof", inf.roof);
-    logVariable("infiltration.unsealedRoads", inf.unsealedRoads);
-    logVariable("infiltration.unsealedSurfaces", inf.unsealedSurfaces);
+    logVariable("inf.roof", inf.roof);
+    logVariable("inf.unsealedRoads", inf.unsealedRoads);
+    logVariable("inf.unsealedSurfaces", inf.unsealedSurfaces);
 
     for (int i = 0; i < inf.surface.size(); i++) {
-        logVariable(QString("infiltration.surface[%1]").arg(i), inf.surface[i]);
+        logVariable(QString("inf.surface[%1]").arg(i), inf.surface[i]);
     }
 
     logVariable("surfaceRunoff_ROW", results.surfaceRunoff_ROW);
