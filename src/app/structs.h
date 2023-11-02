@@ -95,6 +95,7 @@ struct SoilProperties {
 struct Evaporation {
     float roof = 0.0;
     float unsealed = 0.0;
+    float bagrovUnsealed = 0.0;
 };
 
 // Abfluesse nach Bagrov

@@ -441,11 +441,14 @@ void Calculation::doCalculationsFor(
         input.fieldCapacity_150
     );
 
+    intermediates.evaporation.bagrovUnsealed = 0.0;
+
     intermediates.evaporation.unsealed = actualEvaporation(
         usageTuple,
         potentialEvaporation,
         intermediates.soilProperties,
-        precipitation
+        precipitation,
+        intermediates.evaporation.bagrovUnsealed
     );
 
     runoff.unsealedSurface_RUV =
@@ -767,7 +770,8 @@ float Calculation::actualEvaporation(
     UsageTuple& usageTuple,
     PotentialEvaporation& potentialEvaporation,
     SoilProperties& evaporationVars,
-    Precipitation& precipitation
+    Precipitation& precipitation,
+    float& bagrovEffectivity
 )
 {
     // For water bodies, return the potential evaporation
@@ -781,7 +785,7 @@ float Calculation::actualEvaporation(
     // Determine effectivity/effectiveness ??? parameter (old???: bag) for
     // unsealed surfaces
     // Modul Raster abgespeckt (???)
-    float effectivity = EffectivenessUnsealed::getEffectivityParameter(
+    bagrovEffectivity = EffectivenessUnsealed::getEffectivityParameter(
         usageTuple,
         evaporationVars.usableFieldCapacity,
         precipitation.inSummerFloat,
@@ -798,7 +802,7 @@ float Calculation::actualEvaporation(
             evaporationVars.meanPotentialCapillaryRiseRate +
             usageTuple.irrigation,
         potentialEvaporation.perYearFloat,
-        effectivity,
+        bagrovEffectivity,
         throwAway
     );
 
@@ -872,6 +876,7 @@ void Calculation::logResults(
 
     logVariable("ev.roof", results.evaporation.roof);
     logVariable("ev.unsealed", results.evaporation.unsealed);
+    logVariable("ev.bagrovUnsealed", results.evaporation.bagrovUnsealed);
 
     logVariable("rs.roof", rs.roof);
 

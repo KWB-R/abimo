@@ -188,7 +188,8 @@ private:
         UsageTuple& usageTuple,
         PotentialEvaporation& potentialEvaporation,
         SoilProperties& evaporationVars,
-        Precipitation& precipitation
+        Precipitation& precipitation,
+        float& bagrovEffectivity
     );
 
     static void writeResultRecord(
