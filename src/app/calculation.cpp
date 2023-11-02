@@ -378,14 +378,16 @@ void Calculation::doCalculationsFor(
 
     // index 0 = roof
 
+    intermediates.evaporation.roof= Bagrov::realEvapoTranspiration(
+        precipitation.perYearCorrectedFloat,
+        potentialEvaporation.perYearFloat,
+        initValues.getBagrovValue(0),
+        intermediates.bagrovIntermediates
+    );
+
     // Theoretical total runoff assuming that the whole area is a roof
     intermediates.runoffSealed.roof = precipitation.perYearCorrectedFloat -
-        Bagrov::realEvapoTranspiration(
-            precipitation.perYearCorrectedFloat,
-            potentialEvaporation.perYearFloat,
-            initValues.getBagrovValue(0),
-            intermediates.bagrovIntermediates
-        );
+        intermediates.evaporation.roof;
 
     // Actual runoff from roof surfaces (Abfluss der Dachflaechen), old: rowd
     runoff.roof =
@@ -439,14 +441,16 @@ void Calculation::doCalculationsFor(
         input.fieldCapacity_150
     );
 
+    intermediates.evaporation.unsealed = actualEvaporation(
+        usageTuple,
+        potentialEvaporation,
+        intermediates.soilProperties,
+        precipitation
+    );
+
     runoff.unsealedSurface_RUV =
         precipitation.perYearCorrectedFloat -
-        actualEvaporation(
-            usageTuple,
-            potentialEvaporation,
-            intermediates.soilProperties,
-            precipitation
-        );
+        intermediates.evaporation.unsealed;
 
     // Calculate infiltration...
     // =========================
@@ -861,16 +865,19 @@ void Calculation::logResults(
 
     logVariable("in.mainArea", results.mainArea);
 
+    logVariable("sp.depthToWaterTable", sp.depthToWaterTable);
+    logVariable("sp.usableFieldCapacity", sp.usableFieldCapacity);
+    logVariable("sp.potentialCapillaryRise_TAS", sp.potentialCapillaryRise_TAS);
+    logVariable("sp.meanPotentialCapillaryRiseRate", sp.meanPotentialCapillaryRiseRate);
+
+    logVariable("ev.roof", results.evaporation.roof);
+    logVariable("ev.unsealed", results.evaporation.unsealed);
+
     logVariable("rs.roof", rs.roof);
 
     for (int i = 0; i < rs.surface.size(); i++) {
         logVariable(QString("rs.surface[%1]").arg(i), rs.surface[i]);
     }
-
-    logVariable("sp.depthToWaterTable", sp.depthToWaterTable);
-    logVariable("sp.usableFieldCapacity", sp.usableFieldCapacity);
-    logVariable("sp.potentialCapillaryRise_TAS", sp.potentialCapillaryRise_TAS);
-    logVariable("sp.meanPotentialCapillaryRiseRate", sp.meanPotentialCapillaryRiseRate);
 
     logVariable("inf.roof", inf.roof);
     logVariable("inf.unsealedRoads", inf.unsealedRoads);

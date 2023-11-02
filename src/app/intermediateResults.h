@@ -10,6 +10,8 @@ struct IntermediateResults
     PotentialEvaporation potentialEvaporation;
     float mainArea;
 
+    Evaporation evaporation;
+
     RunoffSealed runoffSealed;
 
     SoilProperties soilProperties;

@@ -92,6 +92,11 @@ struct SoilProperties {
     float depthToWaterTable; // old: FLUR, FLW
 };
 
+struct Evaporation {
+    float roof = 0.0;
+    float unsealed = 0.0;
+};
+
 // Abfluesse nach Bagrov
 struct RunoffSealed {
 
