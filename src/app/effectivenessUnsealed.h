@@ -6,7 +6,7 @@
 class EffectivenessUnsealed
 {
 public:
-    static float getEffectivityParameter(
+    static BagrovUnsealed getEffectivityParameter(
         UsageTuple& usageTuple,
         float usableFieldCapacity,
         float precipitationSummer,
@@ -17,10 +17,9 @@ public:
 private:
     static float tableLookup_G02(float usableFieldCapacity);
     static float bag0_forest(float g02);
-    static float bag0_default(float g02, int yield, int irrigation, bool isSummer);
     static float tableLookup_parameter(float g02, int yield);
-    static float nonSummerCorrectionFactor(int irrigation);
-    static float summerCorrectionFactor(float wa);
+    static float dryCorrectionFactor(int irrigation);
+    static float wetCorrectionFactor(float wa);
 };
 
 #endif // EFFECTIVENESSUNSEALED_H

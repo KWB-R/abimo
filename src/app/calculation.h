@@ -189,7 +189,7 @@ private:
         PotentialEvaporation& potentialEvaporation,
         SoilProperties& evaporationVars,
         Precipitation& precipitation,
-        float& bagrovEffectivity
+        BagrovUnsealed& bagrovUnsealed
     );
 
     static void writeResultRecord(

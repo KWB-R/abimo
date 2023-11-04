@@ -4,7 +4,7 @@
 
 #include "helpers.h"
 
-float EffectivenessUnsealed::getEffectivityParameter(
+BagrovUnsealed EffectivenessUnsealed::getEffectivityParameter(
     UsageTuple& usageTuple,
     float usableFieldCapacity,
     float precipitationSummer,
@@ -12,24 +12,31 @@ float EffectivenessUnsealed::getEffectivityParameter(
     float meanPotentialCapillaryRiseRate
 )
 {
-    float result;
+    BagrovUnsealed result;
 
     bool isForest = usageTuple.usage == Usage::forested_W;
 
     // hsonne: these expressions are not the opposites of each other!
-    bool isSummer = precipitationSummer > 0.0 &&
+    bool isWet = precipitationSummer > 0.0 &&
         potentialEvaporationSummer > 0;
 
-    bool isNotSummer = !(precipitationSummer > 0.0) &&
+    bool isDry = !(precipitationSummer > 0.0) &&
         potentialEvaporationSummer == 0;
 
     float g02 = tableLookup_G02(usableFieldCapacity);
 
-    result = (isForest) ?
-        bag0_forest(g02) :
-        bag0_default(g02, usageTuple.yield, usageTuple.irrigation, isNotSummer);
+    if (isForest) {
+        result.effectivity = bag0_forest(g02);
+    } else {
+        result.effectivity = tableLookup_parameter(g02, usageTuple.yield);
+        // multiply with modification factor if we are not in summer
+        if (usageTuple.irrigation > 0 && isDry) {
+            result.factorDry = dryCorrectionFactor(usageTuple.irrigation);
+            result.effectivity *= result.factorDry;
+        }
+    }
 
-    if (isSummer) {
+    if (isWet) {
 
         float height = static_cast<float>(
             precipitationSummer +
@@ -37,7 +44,8 @@ float EffectivenessUnsealed::getEffectivityParameter(
             meanPotentialCapillaryRiseRate
         );
 
-        result *= summerCorrectionFactor(height / potentialEvaporationSummer);
+        result.factorWet = wetCorrectionFactor(height / potentialEvaporationSummer);
+        result.effectivity *= result.factorWet;
     }
 
     return result;
@@ -66,23 +74,6 @@ float EffectivenessUnsealed::bag0_forest(float g02)
     }
 
     return 8.0F;
-}
-
-float EffectivenessUnsealed::bag0_default(
-    float g02,
-    int yield,
-    int irrigation,
-    bool isNotSummer
-)
-{
-    float result = tableLookup_parameter(g02, yield);
-
-    // multiply with modification factor if we are not in summer
-    if (irrigation > 0 && isNotSummer) {
-        result *= nonSummerCorrectionFactor(irrigation);
-    }
-
-    return result;
 }
 
 float EffectivenessUnsealed::tableLookup_parameter(float g02, int yield)
@@ -140,7 +131,7 @@ float EffectivenessUnsealed::tableLookup_parameter(float g02, int yield)
     return result;
 }
 
-float EffectivenessUnsealed::nonSummerCorrectionFactor(int irrigation)
+float EffectivenessUnsealed::dryCorrectionFactor(int irrigation)
 {
     return
         0.9985F +
@@ -148,7 +139,7 @@ float EffectivenessUnsealed::nonSummerCorrectionFactor(int irrigation)
         0.00000379762F * irrigation * irrigation;
 }
 
-float EffectivenessUnsealed::summerCorrectionFactor(float wa)
+float EffectivenessUnsealed::wetCorrectionFactor(float wa)
 {
     static const std::vector<float> VALUES_WA = {
         0.45F, 0.50F, 0.55F, 0.60F, 0.65F, 0.70F, 0.75F, // 0 ..  6
