@@ -21,6 +21,8 @@ struct IntermediateResults
 
     BagrovUnsealed bagrovUnsealed;
 
+    float fractionUnsealed = 0.0f;
+
     // Langjaehriger MW des Regenwasserabflusses [mm/a] 003 N
     float surfaceRunoff_ROW = 0.0f;
 

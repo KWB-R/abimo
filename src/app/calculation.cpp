@@ -487,9 +487,13 @@ void Calculation::doCalculationsFor(
 
     // infiltration from unsealed non-road surfaces
     // old: riuv
-    intermediates.infiltration.unsealedSurfaces = (
+    intermediates.fractionUnsealed = (
         100.0F - input.mainPercentageSealed()
-    ) / 100.0F * intermediates.runoff.unsealedSurface_RUV;
+    ) / 100.0F;
+
+    intermediates.infiltration.unsealedSurfaces =
+        intermediates.fractionUnsealed *
+        intermediates.runoff.unsealedSurface_RUV;
 
     // Set infiltration-related fields in output record
     //=================================================
@@ -898,6 +902,7 @@ void Calculation::logResults(
 
     logVariable("ro.unsealedRoads", ro.unsealedRoads);
     logVariable("ro.unsealedSurface_RUV", ro.unsealedSurface_RUV);
+    logVariable("fractionUnsealed", results.fractionUnsealed);
 
     logVariable("inf.roof", inf.roof);
     logVariable("inf.unsealedRoads", inf.unsealedRoads);
