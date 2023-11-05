@@ -17,7 +17,7 @@ private:
     const static std::vector<float> MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER;
 
 public:
-    static int getMeanPotentialCapillaryRiseRate(
+    static float getMeanPotentialCapillaryRiseRate(
         float potentialCapillaryRise,
         float usableFieldCapacity,
         Usage usage,

@@ -85,6 +85,7 @@ struct SoilProperties {
     // pot. Aufstiegshoehe TAS = FLUR - mittl. Durchwurzelungstiefe TWS
     // potentielle Aufstiegshoehe
     float potentialCapillaryRise_TAS = 0.0f;
+    float meanPotentialCapillaryRiseRateRaw = 0.0f;
     float meanPotentialCapillaryRiseRate = 0.0f;
 
     // Flurabstandswert [m] ID_FLW 4.1 N

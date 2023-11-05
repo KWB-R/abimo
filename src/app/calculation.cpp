@@ -753,13 +753,16 @@ SoilProperties Calculation::getSoilProperties(
 
     // mittlere pot. kapillare Aufstiegsrate kr (mm/d) des Sommerhalbjahres
     // Kapillarer Aufstieg pro Jahr ID_KR neu, old: KR
-    result.meanPotentialCapillaryRiseRate =
+    result.meanPotentialCapillaryRiseRateRaw =
         SoilAndVegetation::getMeanPotentialCapillaryRiseRate(
             result.potentialCapillaryRise_TAS,
             result.usableFieldCapacity,
             usage,
             yield
         );
+
+    result.meanPotentialCapillaryRiseRate = (int)
+        result.meanPotentialCapillaryRiseRateRaw;
 
     return result;
 }
@@ -871,6 +874,7 @@ void Calculation::logResults(
     logVariable("sp.usableFieldCapacity", sp.usableFieldCapacity);
     logVariable("sp.potentialCapillaryRise_TAS", sp.potentialCapillaryRise_TAS);
     logVariable("sp.meanPotentialCapillaryRiseRate", sp.meanPotentialCapillaryRiseRate);
+    logVariable("sp.meanPotentialCapillaryRiseRateRaw", sp.meanPotentialCapillaryRiseRateRaw);
 
     logVariable("ev.roof", results.evaporation.roof);
     logVariable("ev.unsealed", results.evaporation.unsealed);

@@ -49,22 +49,25 @@ const std::vector<float> SoilAndVegetation::MEAN_POTENTIAL_CAPILLARY_RISE_RATES_
 //
 // wird eingefuegt, wenn die Bodenart in das Zahlenmaterial aufgenommen
 // wird. Vorlaeufig wird Sande angenommen.
-int SoilAndVegetation::getMeanPotentialCapillaryRiseRate(
+float SoilAndVegetation::getMeanPotentialCapillaryRiseRate(
         float potentialCapillaryRise,
         float usableFieldCapacity,
         Usage usage,
         int yieldPower
 )
 {
+    // row index i, column index j
+    int row = helpers::index(usableFieldCapacity, USABLE_FIELD_CAPACITIES);
+    int col = helpers::index(potentialCapillaryRise, POTENTIAL_RATES_OF_ASCENT);
+
     float kr = (potentialCapillaryRise <= 0.0) ?
         7.0F :
         MEAN_POTENTIAL_CAPILLARY_RISE_RATES_SUMMER[
-            helpers::index(potentialCapillaryRise, POTENTIAL_RATES_OF_ASCENT) +
-            helpers::index(usableFieldCapacity, USABLE_FIELD_CAPACITIES) *
-            POTENTIAL_RATES_OF_ASCENT.size()
+            row * POTENTIAL_RATES_OF_ASCENT.size() +
+            col
         ];
 
-    return (int)(estimateDaysOfGrowth(usage, yieldPower) * kr);
+    return estimateDaysOfGrowth(usage, yieldPower) * kr;
 }
 
 // mittlere Zahl der Wachstumstage
