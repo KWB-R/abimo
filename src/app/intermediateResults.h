@@ -13,6 +13,7 @@ struct IntermediateResults
     Evaporation evaporation;
 
     RunoffSealed runoffSealed;
+    Runoff runoff;
 
     SoilProperties soilProperties;
 
